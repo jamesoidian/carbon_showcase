@@ -1,0 +1,2873 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>THE HANDPRINT — An Audiovisual Short Film by Gemini 4 Carbon</title>
+  <style>
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #040507;
+  color: #f5f5f7;
+  font-family: -apple-system, BlinkMacSystemFont, "Inter", "SF Pro Display", "Segoe UI", sans-serif;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
+}
+
+#stage {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 460px;
+  overflow: hidden;
+  background: #040507;
+}
+
+#glCanvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  cursor: crosshair;
+}
+
+.cinema-vignette {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(to bottom, rgba(3,4,7,0.58) 0%, transparent 16%, transparent 72%, rgba(3,4,7,0.84) 100%),
+    radial-gradient(circle at 50% 48%, transparent 52%, rgba(2,3,6,0.68) 100%);
+  z-index: 2;
+}
+
+/* Opening Title Invitation Veil */
+.intro-veil {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 28px;
+  background: radial-gradient(circle at 50% 50%, rgba(6,8,14,0.42) 0%, rgba(3,4,7,0.82) 100%);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  transition: opacity 0.85s ease, visibility 0.85s ease;
+}
+
+.intro-veil.hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.intro-kicker {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: rgba(253, 224, 171, 0.78);
+  margin-bottom: 14px;
+}
+
+.intro-title {
+  font-family: "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Palatino, Georgia, serif;
+  font-size: clamp(32px, 5.4vw, 62px);
+  font-weight: 400;
+  letter-spacing: 0.06em;
+  color: #ffffff;
+  margin-bottom: 12px;
+  text-shadow: 0 8px 36px rgba(0, 0, 0, 0.85);
+}
+
+.intro-sub {
+  font-size: clamp(14px, 1.7vw, 17px);
+  color: rgba(226, 232, 240, 0.74);
+  max-width: 520px;
+  line-height: 1.55;
+  margin-bottom: 30px;
+}
+
+.play-cta {
+  appearance: none;
+  background: rgba(255, 248, 235, 0.94);
+  color: #090b10;
+  border: none;
+  border-radius: 999px;
+  height: 48px;
+  padding: 0 28px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  box-shadow: 0 0 40px rgba(251, 191, 36, 0.28), 0 12px 28px rgba(0, 0, 0, 0.55);
+  transition: transform 0.22s ease, box-shadow 0.22s ease, background 0.22s ease;
+}
+
+.play-cta:hover {
+  transform: scale(1.04);
+  background: #ffffff;
+  box-shadow: 0 0 54px rgba(251, 191, 36, 0.45), 0 14px 34px rgba(0, 0, 0, 0.65);
+}
+
+.muted-link {
+  appearance: none;
+  background: none;
+  border: none;
+  margin-top: 14px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.5);
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.muted-link:hover {
+  color: rgba(255, 255, 255, 0.88);
+}
+
+/* Top Subtle Act Header */
+.top-bar {
+  position: absolute;
+  top: 16px;
+  left: 20px;
+  right: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  z-index: 10;
+  pointer-events: none;
+  transition: opacity 0.45s ease;
+}
+
+.act-indicator {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(8, 10, 16, 0.52);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  border-radius: 999px;
+  padding: 6px 14px;
+}
+
+.act-num {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: #fcd34d;
+}
+
+.act-sep {
+  width: 1px;
+  height: 11px;
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.act-name {
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(248, 250, 252, 0.82);
+}
+
+.top-controls {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  pointer-events: auto;
+}
+
+.icon-pill {
+  appearance: none;
+  background: rgba(8, 10, 16, 0.56);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: rgba(248, 250, 252, 0.85);
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.icon-pill:hover {
+  background: rgba(24, 29, 42, 0.82);
+  border-color: rgba(255, 255, 255, 0.28);
+  color: #ffffff;
+}
+
+.icon-pill.rec-on {
+  background: rgba(239, 68, 68, 0.24);
+  border-color: rgba(248, 113, 113, 0.65);
+  color: #fecaca;
+}
+
+/* Cinema Subtitle Stage */
+.subtitle-stage {
+  position: absolute;
+  left: 24px;
+  right: 24px;
+  bottom: 76px;
+  z-index: 9;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 6px;
+}
+
+.sub-line-primary {
+  font-family: "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Palatino, Georgia, serif;
+  font-size: clamp(18px, 2.5vw, 29px);
+  font-weight: 400;
+  line-height: 1.38;
+  letter-spacing: 0.015em;
+  color: #ffffff;
+  max-width: 820px;
+  text-shadow: 0 2px 18px rgba(0, 0, 0, 0.95), 0 0 40px rgba(0, 0, 0, 0.85);
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.65s ease, transform 0.65s ease;
+}
+
+.sub-line-primary.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.sub-line-secondary {
+  font-family: -apple-system, BlinkMacSystemFont, "Inter", sans-serif;
+  font-size: clamp(13px, 1.5vw, 16px);
+  font-weight: 400;
+  letter-spacing: 0.04em;
+  color: rgba(226, 232, 240, 0.78);
+  max-width: 720px;
+  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.95);
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 0.65s ease 0.12s, transform 0.65s ease 0.12s;
+}
+
+.sub-line-secondary.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* End-of-film Epilogue Replay Card */
+.epilogue-bar {
+  position: absolute;
+  bottom: 158px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 15;
+  display: flex;
+  gap: 10px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.6s ease;
+}
+
+.epilogue-bar.visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Bottom Timeline & Act Scrubber */
+.player-dock {
+  position: absolute;
+  left: 20px;
+  right: 20px;
+  bottom: 14px;
+  z-index: 12;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(8, 10, 16, 0.66);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.11);
+  border-radius: 14px;
+  padding: 8px 14px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+}
+
+.transport-btn {
+  appearance: none;
+  background: rgba(255, 255, 255, 0.10);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: #ffffff;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  font-size: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.18s ease, transform 0.18s ease;
+}
+
+.transport-btn:hover {
+  background: rgba(255, 255, 255, 0.22);
+  transform: scale(1.06);
+}
+
+.timeline-wrap {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  cursor: pointer;
+  padding: 4px 0;
+}
+
+.timeline-track {
+  position: relative;
+  width: 100%;
+  height: 5px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.14);
+  overflow: hidden;
+}
+
+.timeline-fill {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 0%;
+  background: linear-gradient(90deg, #f59e0b, #38bdf8, #fde68a);
+  border-radius: 999px;
+}
+
+.act-ticks {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 4px;
+}
+
+.act-tick-btn {
+  appearance: none;
+  background: none;
+  border: none;
+  text-align: left;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: rgba(255, 255, 255, 0.38);
+  cursor: pointer;
+  padding: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: color 0.18s ease;
+}
+
+.act-tick-btn:hover {
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.act-tick-btn.active {
+  color: #fde68a;
+}
+
+.time-readout {
+  font-family: "SF Mono", "JetBrains Mono", ui-monospace, monospace;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.62);
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+}
+
+@media (max-width: 720px) {
+  .act-ticks {
+    display: none;
+  }
+  .subtitle-stage {
+    bottom: 66px;
+    left: 16px;
+    right: 16px;
+  }
+  .top-bar {
+    top: 10px;
+    left: 12px;
+    right: 12px;
+  }
+  .player-dock {
+    left: 12px;
+    right: 12px;
+    bottom: 10px;
+  }
+}
+
+  </style>
+</head>
+<body>
+  <div id="stage">
+    <canvas id="glCanvas"></canvas>
+    <div class="cinema-vignette"></div>
+
+    <!-- Opening Cinema Invitation -->
+    <div class="intro-veil" id="introVeil">
+      <div class="intro-kicker">GEMINI 4 CARBON · AUDIOVISUAL SHORT FILM</div>
+      <h1 class="intro-title">THE HANDPRINT</h1>
+      <p class="intro-sub">
+        45,000 years from charcoal on cave stone to the end of humanity’s long solitude in thought.<br />
+        Move or touch inside any scene as the score unfolds.
+      </p>
+      <button class="play-cta" id="btnStartSound">
+        <span>▶</span>
+        <span>EXPERIENCE WITH SOUND · 1:26</span>
+      </button>
+      <button class="muted-link" id="btnStartMuted">or watch silent</button>
+    </div>
+
+    <!-- Top Chapter Indicator & Controls -->
+    <header class="top-bar">
+      <div class="act-indicator">
+        <span class="act-num" id="actNum">ACT I</span>
+        <span class="act-sep"></span>
+        <span class="act-name" id="actName">THE CAVE · 45,000 BCE</span>
+      </div>
+
+      <div class="top-controls">
+        <button class="icon-pill" id="btnRec" title="Record 60fps video + stereo score (.webm)">
+          <span id="recText">● REC</span>
+        </button>
+        <button class="icon-pill" id="btnMute" title="Toggle Sound (Key: M)">
+          <span id="muteText">SOUND ON</span>
+        </button>
+        <button class="icon-pill" id="btnFull" title="Toggle Fullscreen (Key: F)">
+          <span>⛶</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Narrative Cinema Subtitles -->
+    <div class="subtitle-stage">
+      <div class="sub-line-primary" id="subPrimary"></div>
+      <div class="sub-line-secondary" id="subSecondary"></div>
+    </div>
+
+    <!-- End Replay Button -->
+    <div class="epilogue-bar" id="epilogueBar">
+      <button class="play-cta" id="btnReplay">
+        <span>↻</span>
+        <span>REPLAY FILM</span>
+      </button>
+    </div>
+
+    <!-- Scrubbable 6-Act Cinema Transport -->
+    <footer class="player-dock">
+      <button class="transport-btn" id="btnPlayPause" title="Play / Pause (Space)">
+        <span id="playIcon">❚❚</span>
+      </button>
+
+      <div class="timeline-wrap" id="timelineWrap">
+        <div class="timeline-track" id="timelineTrack">
+          <div class="timeline-fill" id="timelineFill"></div>
+        </div>
+        <div class="act-ticks">
+          <button class="act-tick-btn active" data-jump="0">I · CAVE</button>
+          <button class="act-tick-btn" data-jump="14">II · TIME</button>
+          <button class="act-tick-btn" data-jump="28">III · GEOMETRY</button>
+          <button class="act-tick-btn" data-jump="43">IV · HORIZONS</button>
+          <button class="act-tick-btn" data-jump="60">V · FIRE</button>
+          <button class="act-tick-btn" data-jump="73">VI · CHAPTER ONE</button>
+        </div>
+      </div>
+
+      <div class="time-readout" id="timeReadout">0:00 / 1:26</div>
+    </footer>
+  </div>
+
+  <script>
+// 6-Movement Synchronized WebAudio Film Score Synthesizer ("THE HANDPRINT", 86.0s)
+
+function midiToHz(m) {
+  return 440.0 * Math.pow(2.0, (m - 69.0) / 12.0);
+}
+
+class StoryScoreEngine {
+  constructor() {
+    this.ctx = null;
+    this.muted = false;
+    this.unlocked = false;
+    this.events = [];
+    this.nextIdx = 0;
+    this.lastStoryTime = -1;
+
+    // Analytic + real-time FFT reactive envelopes for GPU shader sync (works even when muted!)
+    this.envLow = 0;
+    this.envMid = 0;
+    this.envHigh = 0;
+
+    this._composeScore();
+  }
+
+  _composeScore() {
+    const ev = [];
+    const add = (t, kind, data) => ev.push({ t, kind, ...data });
+
+    // =======================================================================
+    // ACT I (0..14s): THE CAVE — Heartbeat + Sparse Intimate Felt Piano (Dm)
+    // =======================================================================
+    [0.4, 4.2, 8.0, 11.6].forEach((t) => add(t, 'heartbeat', { amp: 0.72 }));
+
+    const act1Piano = [
+      [0.8, 38, 4.2, 0.55, -0.2], [1.6, 45, 3.6, 0.45, 0.15], [2.5, 52, 3.4, 0.50, 0.25], [3.3, 53, 3.8, 0.58, -0.1],
+      [4.8, 34, 4.2, 0.56, -0.3], [5.6, 41, 3.5, 0.46, 0.1],  [6.4, 50, 3.5, 0.52, 0.3],  [7.3, 52, 3.2, 0.48, -0.15],
+      [8.6, 43, 4.0, 0.54, -0.2], [9.5, 50, 3.4, 0.48, 0.2],  [10.4, 58, 3.4, 0.52, 0.35],
+      [11.8, 45, 3.5, 0.55, -0.1], [12.6, 52, 3.0, 0.48, 0.2], [13.2, 61, 2.8, 0.44, 0.3]
+    ];
+    act1Piano.forEach(([t, m, dur, vel, pan]) => add(t, 'piano', { midi: m, dur, vel, pan }));
+    add(0.2, 'wind', { dur: 13.5, amp: 0.16 });
+
+    // =======================================================================
+    // ACT II (14..28s): THE BOTTLENECK — Ticking Clock Pulse + Solo Cello
+    // =======================================================================
+    const clockPattern = [69, 74, 76, 77, 69, 74, 79, 76]; // A4 D5 E5 F5...
+    for (let i = 0; i < 54; i++) {
+      const t = 14.0 + i * 0.25;
+      const m = clockPattern[i % clockPattern.length] - (i > 28 ? 2 : 0);
+      add(t, 'pulse', { midi: m, vel: 0.28 + (i / 54) * 0.24, pan: ((i % 4) - 1.5) * 0.32 });
+    }
+    // Deep bowed solo cello phrases
+    add(14.0, 'strings', { midis: [38, 50], dur: 3.6, amp: 0.34, bright: 580 });
+    add(17.5, 'strings', { midis: [34, 46, 53], dur: 3.6, amp: 0.38, bright: 680 });
+    add(21.0, 'strings', { midis: [43, 50, 58], dur: 3.6, amp: 0.42, bright: 780 });
+    add(24.5, 'strings', { midis: [45, 52, 57, 64], dur: 3.5, amp: 0.48, bright: 920 });
+
+    // =======================================================================
+    // ACT III (28..43s): HIDDEN GEOMETRY — Time-Freeze Bloom + Latent Arpeggios
+    // =======================================================================
+    add(28.0, 'subdrop', { amp: 0.78 });
+    add(28.05, 'choir', { midis: [41, 48, 55, 57, 64, 71], dur: 5.5, amp: 0.34 }); // Fmaj9#11
+    add(33.4,  'choir', { midis: [48, 55, 60, 64, 67, 74], dur: 5.0, amp: 0.38 }); // Cmaj9
+    add(38.2,  'choir', { midis: [45, 52, 57, 61, 64, 69], dur: 4.8, amp: 0.44 }); // A major lift!
+
+    const arpChords = [
+      [65, 69, 72, 76, 79, 83], // Fmaj9#11
+      [60, 64, 67, 71, 74, 79], // Cmaj9
+      [57, 61, 64, 69, 73, 76]  // A6/9
+    ];
+    for (let i = 0; i < 86; i++) {
+      const t = 28.6 + i * (14.2 / 86);
+      const chordIdx = t < 33.4 ? 0 : (t < 38.2 ? 1 : 2);
+      const ch = arpChords[chordIdx];
+      const note = ch[i % ch.length] + (i % 12 === 11 ? 12 : 0);
+      add(t, 'bell', { midi: note, dur: 1.35, vel: 0.25 + (i / 86) * 0.22, pan: Math.sin(i * 0.9) * 0.65 });
+    }
+
+    // =======================================================================
+    // ACT IV (43..60s): WHAT CHANGES NOW — Driving Ostinato + Soaring Ensemble
+    // =======================================================================
+    const act4Prog = [
+      { t0: 43.0, dur: 5.8, bass: 26, midis: [38, 50, 57, 60, 64, 69], arp: [50, 57, 62, 65, 69, 72] }, // 4A: Protein Fold (Dm9)
+      { t0: 48.8, dur: 5.7, bass: 34, midis: [34, 46, 53, 58, 62, 69], arp: [58, 62, 65, 69, 72, 76] }, // 4B: Stellarator Star (Bbmaj9#11)
+      { t0: 54.5, dur: 5.5, bass: 29, midis: [41, 48, 57, 60, 65, 72], arp: [60, 65, 69, 72, 76, 79] }  // 4C: Planetary Tapestry (Fmaj9 -> C)
+    ];
+    act4Prog.forEach((seg) => {
+      add(seg.t0, 'subdrop', { amp: 0.72 });
+      add(seg.t0, 'strings', { midis: seg.midis, dur: seg.dur, amp: 0.62, bright: 1850 });
+      add(seg.t0, 'choir', { midis: seg.midis.slice(1), dur: seg.dur, amp: 0.36 });
+      const steps = Math.floor(seg.dur / 0.18);
+      for (let s = 0; s < steps; s++) {
+        const ts = seg.t0 + s * 0.18;
+        const m = seg.arp[s % seg.arp.length];
+        add(ts, 'pulse', { midi: m, vel: 0.42, pan: ((s % 2) ? 0.48 : -0.48) });
+        if (s % 4 === 0) {
+          add(ts, 'piano', { midi: seg.bass + 12, dur: 0.85, vel: 0.58, pan: 0 });
+        }
+      }
+    });
+
+    // =======================================================================
+    // ACT V (60..73s): THE WEIGHT OF THE FIRE — Sudden Hush, Heartbeat & Solo
+    // =======================================================================
+    add(60.0, 'subdrop', { amp: 0.95 });
+    [61.2, 64.4, 67.6, 70.8].forEach((t) => add(t, 'heartbeat', { amp: 0.82 }));
+    // High fragile exposed violin harmonic + single quiet felt piano tones
+    add(60.6, 'strings', { midis: [69, 81], dur: 4.2, amp: 0.22, bright: 900 });
+    add(64.8, 'strings', { midis: [67, 79], dur: 4.0, amp: 0.22, bright: 850 });
+    add(68.8, 'strings', { midis: [64, 76], dur: 4.1, amp: 0.26, bright: 950 });
+
+    [
+      [61.8, 50, 3.8, 0.42, -0.15],
+      [65.4, 46, 3.8, 0.40, 0.20],
+      [69.2, 45, 3.8, 0.46, 0.0],
+      [71.6, 57, 2.2, 0.42, 0.15]
+    ].forEach(([t, m, d, v, p]) => add(t, 'piano', { midi: m, dur: d, vel: v, pan: p }));
+
+    // =======================================================================
+    // ACT VI (73..86s): CHAPTER ONE — Radiant D-Major Picardy Sunrise!
+    // =======================================================================
+    add(73.0, 'subdrop', { amp: 0.88 });
+    // D Major Add9 (D2 A2 E3 F#3 A3 D4 F#4 A4 E5)
+    add(73.0, 'strings', { midis: [38, 45, 52, 54, 62, 66, 69], dur: 4.5, amp: 0.68, bright: 2100 });
+    add(73.0, 'choir',   { midis: [50, 57, 62, 66, 69, 76], dur: 4.6, amp: 0.52 });
+
+    // Gmaj7#11 / D (77.4s)
+    add(77.4, 'strings', { midis: [38, 43, 50, 54, 59, 66, 73], dur: 3.8, amp: 0.68, bright: 2200 });
+    add(77.4, 'choir',   { midis: [50, 55, 59, 66, 74], dur: 3.8, amp: 0.50 });
+
+    // Final Resolved Dmaj9 Cathedral Hold (81.0..86.0s)
+    add(81.0, 'strings', { midis: [26, 38, 45, 54, 57, 62, 66, 76], dur: 5.2, amp: 0.72, bright: 1900 });
+    add(81.0, 'choir',   { midis: [50, 57, 62, 66, 74, 78], dur: 5.2, amp: 0.56 });
+
+    // Sparkling dawn felt-piano + bell notes over final sunrise
+    [
+      [73.1, 62, 3.2, 0.62, -0.3], [73.9, 66, 3.0, 0.56, 0.25], [74.8, 69, 3.0, 0.58, -0.15], [75.8, 76, 3.2, 0.60, 0.35],
+      [77.5, 66, 3.0, 0.56, -0.25],[78.5, 71, 3.0, 0.55, 0.25], [79.6, 73, 3.0, 0.56, -0.1],
+      [81.1, 62, 4.5, 0.64, -0.2], [81.6, 69, 4.2, 0.58, 0.2],  [82.2, 78, 4.0, 0.62, 0.0]
+    ].forEach(([t, m, d, v, p]) => {
+      add(t, 'piano', { midi: m, dur: d, vel: v, pan: p });
+      add(t + 0.02, 'bell', { midi: m + 12, dur: d * 0.7, vel: v * 0.42, pan: -p });
+    });
+
+    ev.sort((a, b) => a.t - b.t);
+    this.events = ev;
+  }
+
+  init() {
+    if (this.ctx) return;
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if (!AudioCtx) return;
+    this.ctx = new AudioCtx();
+
+    this.master = this.ctx.createGain();
+    this.master.gain.value = this.muted ? 0.0001 : 0.84;
+
+    this.comp = this.ctx.createDynamicsCompressor();
+    this.comp.threshold.value = -9;
+    this.comp.knee.value = 16;
+    this.comp.ratio.value = 5;
+    this.comp.attack.value = 0.004;
+    this.comp.release.value = 0.22;
+
+    this.analyser = this.ctx.createAnalyser();
+    this.analyser.fftSize = 256;
+    this.freqData = new Uint8Array(this.analyser.frequencyBinCount);
+
+    this.streamDest = this.ctx.createMediaStreamDestination();
+
+    this.dry = this.ctx.createGain();
+    this.dry.gain.value = 0.70;
+
+    this.wet = this.ctx.createGain();
+    this.wet.gain.value = 0.52;
+    this.convolver = this.ctx.createConvolver();
+    this.convolver.buffer = this._makeConcertHallIR(3.3, 2.7);
+
+    this.dry.connect(this.master);
+    this.wet.connect(this.convolver);
+    this.convolver.connect(this.master);
+
+    this.master.connect(this.comp);
+    this.comp.connect(this.analyser);
+    this.analyser.connect(this.ctx.destination);
+    this.comp.connect(this.streamDest);
+
+    this.noiseBuf = this._makePinkNoise(3.0);
+  }
+
+  _makeConcertHallIR(seconds, decay) {
+    const sr = this.ctx.sampleRate;
+    const len = Math.floor(sr * seconds);
+    const buf = this.ctx.createBuffer(2, len, sr);
+    for (let c = 0; c < 2; c++) {
+      const ch = buf.getChannelData(c);
+      let lp = 0;
+      for (let i = 0; i < len; i++) {
+        const u = i / len;
+        const env = Math.pow(1 - u, decay) * (0.35 + 0.65 * Math.min(1, i / (sr * 0.025)));
+        const n = (Math.random() * 2 - 1) * env;
+        lp = lp * 0.76 + n * 0.24;
+        ch[i] = lp * 0.88;
+      }
+    }
+    return buf;
+  }
+
+  _makePinkNoise(seconds) {
+    const sr = this.ctx.sampleRate;
+    const len = Math.floor(sr * seconds);
+    const buf = this.ctx.createBuffer(1, len, sr);
+    const d = buf.getChannelData(0);
+    let b0 = 0, b1 = 0, b2 = 0;
+    for (let i = 0; i < len; i++) {
+      const w = Math.random() * 2 - 1;
+      b0 = 0.997 * b0 + w * 0.099;
+      b1 = 0.963 * b1 + w * 0.296;
+      b2 = 0.570 * b2 + w * 1.052;
+      d[i] = (b0 + b1 + b2 + w * 0.18) * 0.14;
+    }
+    return buf;
+  }
+
+  unlock(unmute = true) {
+    this.init();
+    if (!this.ctx) return;
+    if (this.ctx.state === 'suspended') this.ctx.resume();
+    this.unlocked = true;
+    this.muted = !unmute;
+    this.master.gain.setTargetAtTime(this.muted ? 0.0001 : 0.84, this.ctx.currentTime, 0.06);
+  }
+
+  toggleMute() {
+    if (!this.unlocked) {
+      this.unlock(true);
+      return false;
+    }
+    this.muted = !this.muted;
+    if (this.ctx) {
+      this.master.gain.setTargetAtTime(this.muted ? 0.0001 : 0.84, this.ctx.currentTime, 0.06);
+    }
+    return this.muted;
+  }
+
+  seek(storyTime) {
+    this.lastStoryTime = storyTime;
+    this.nextIdx = 0;
+    while (this.nextIdx < this.events.length && this.events[this.nextIdx].t < storyTime - 0.02) {
+      this.nextIdx++;
+    }
+  }
+
+  update(storyTime, dt, isPlaying) {
+    // Decay visual reactivity envelopes smoothly
+    this.envLow = Math.max(0, this.envLow - dt * 1.6);
+    this.envMid = Math.max(0, this.envMid - dt * 2.1);
+    this.envHigh = Math.max(0, this.envHigh - dt * 3.0);
+
+    if (!isPlaying) return;
+
+    // Detect loop wrap or scrub jump
+    if (storyTime < this.lastStoryTime - 0.25 || storyTime > this.lastStoryTime + 1.5) {
+      this.seek(storyTime);
+    }
+    this.lastStoryTime = storyTime;
+
+    const horizon = storyTime + 0.10;
+    while (this.nextIdx < this.events.length && this.events[this.nextIdx].t <= horizon) {
+      const ev = this.events[this.nextIdx++];
+      const delay = Math.max(0, ev.t - storyTime);
+      this._triggerEvent(ev, delay);
+    }
+
+    // Blend real FFT energy if unmuted
+    if (this.ctx && !this.muted && this.analyser) {
+      this.analyser.getByteFrequencyData(this.freqData);
+      let l = 0, m = 0, h = 0;
+      for (let i = 0; i < 8; i++) l += this.freqData[i];
+      for (let i = 8; i < 36; i++) m += this.freqData[i];
+      for (let i = 36; i < 90; i++) h += this.freqData[i];
+      this.envLow = Math.max(this.envLow, (l / (8 * 255)));
+      this.envMid = Math.max(this.envMid, (m / (28 * 255)));
+      this.envHigh = Math.max(this.envHigh, (h / (54 * 255)));
+    }
+  }
+
+  _panNode(panVal) {
+    if (this.ctx.createStereoPanner) {
+      const p = this.ctx.createStereoPanner();
+      p.pan.value = Math.max(-0.95, Math.min(0.95, panVal || 0));
+      return p;
+    }
+    return this.ctx.createGain();
+  }
+
+  _triggerEvent(ev, delaySec) {
+    // Always bump analytic visual envelopes so silent playback still dances on beat!
+    if (ev.kind === 'heartbeat' || ev.kind === 'subdrop') this.envLow = Math.min(1.2, this.envLow + 0.75);
+    if (ev.kind === 'piano' || ev.kind === 'strings' || ev.kind === 'choir') this.envMid = Math.min(1.2, this.envMid + 0.45);
+    if (ev.kind === 'pulse' || ev.kind === 'bell') this.envHigh = Math.min(1.2, this.envHigh + 0.42);
+
+    if (!this.ctx || !this.unlocked || this.muted) return;
+    const t0 = this.ctx.currentTime + delaySec;
+
+    if (ev.kind === 'piano') {
+      const f = midiToHz(ev.midi);
+      const pan = this._panNode(ev.pan);
+      pan.connect(this.dry);
+      pan.connect(this.wet);
+
+      const lp = this.ctx.createBiquadFilter();
+      lp.type = 'lowpass';
+      lp.frequency.setValueAtTime(f * 5.2, t0);
+      lp.frequency.exponentialRampToValueAtTime(Math.max(180, f * 1.35), t0 + ev.dur * 0.75);
+
+      const g = this.ctx.createGain();
+      const peak = 0.16 * ev.vel;
+      g.gain.setValueAtTime(0.0001, t0);
+      g.gain.linearRampToValueAtTime(peak, t0 + 0.010);
+      g.gain.exponentialRampToValueAtTime(0.0001, t0 + ev.dur);
+
+      const o1 = this.ctx.createOscillator();
+      o1.type = 'triangle';
+      o1.frequency.value = f;
+
+      const o2 = this.ctx.createOscillator();
+      o2.type = 'sine';
+      o2.frequency.value = f * 2.001;
+      const g2 = this.ctx.createGain();
+      g2.gain.value = 0.24;
+
+      // Subtle felt-hammer wooden thud transient
+      const thud = this.ctx.createBufferSource();
+      thud.buffer = this.noiseBuf;
+      const tBp = this.ctx.createBiquadFilter();
+      tBp.type = 'lowpass';
+      tBp.frequency.value = 220;
+      const tg = this.ctx.createGain();
+      tg.gain.setValueAtTime(0.06 * ev.vel, t0);
+      tg.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.028);
+      thud.connect(tBp); tBp.connect(tg); tg.connect(pan);
+      thud.start(t0); thud.stop(t0 + 0.032);
+
+      o1.connect(lp);
+      o2.connect(g2); g2.connect(lp);
+      lp.connect(g);
+      g.connect(pan);
+      o1.start(t0); o2.start(t0);
+      o1.stop(t0 + ev.dur + 0.05); o2.stop(t0 + ev.dur + 0.05);
+
+    } else if (ev.kind === 'strings') {
+      const lp = this.ctx.createBiquadFilter();
+      lp.type = 'lowpass';
+      lp.frequency.setValueAtTime(240, t0);
+      lp.frequency.exponentialRampToValueAtTime(ev.bright || 1200, t0 + ev.dur * 0.45);
+      lp.frequency.exponentialRampToValueAtTime(320, t0 + ev.dur);
+
+      const env = this.ctx.createGain();
+      const perVoice = (0.13 * ev.amp) / Math.max(1, Math.sqrt(ev.midis.length));
+      env.gain.setValueAtTime(0.0001, t0);
+      env.gain.linearRampToValueAtTime(perVoice, t0 + Math.min(1.1, ev.dur * 0.35));
+      env.gain.setValueAtTime(perVoice * 0.88, t0 + ev.dur * 0.7);
+      env.gain.exponentialRampToValueAtTime(0.0001, t0 + ev.dur + 0.35);
+
+      lp.connect(env);
+      env.connect(this.dry);
+      env.connect(this.wet);
+
+      ev.midis.forEach((m, idx) => {
+        const f = midiToHz(m);
+        [-6.5, 6.5].forEach((det) => {
+          const o = this.ctx.createOscillator();
+          o.type = 'sawtooth';
+          o.frequency.value = f;
+          o.detune.value = det + (idx - 1) * 1.5;
+          o.connect(lp);
+          o.start(t0);
+          o.stop(t0 + ev.dur + 0.4);
+        });
+      });
+
+    } else if (ev.kind === 'choir') {
+      // Two vowel-formant bandpass resonators ("Ahhh" cathedral pad)
+      const f1 = this.ctx.createBiquadFilter();
+      f1.type = 'bandpass'; f1.frequency.value = 720; f1.Q.value = 2.6;
+      const f2 = this.ctx.createBiquadFilter();
+      f2.type = 'bandpass'; f2.frequency.value = 1180; f2.Q.value = 3.0;
+
+      const env = this.ctx.createGain();
+      const amp = (0.16 * ev.amp) / Math.max(1, Math.sqrt(ev.midis.length));
+      env.gain.setValueAtTime(0.0001, t0);
+      env.gain.linearRampToValueAtTime(amp, t0 + Math.min(1.4, ev.dur * 0.38));
+      env.gain.exponentialRampToValueAtTime(0.0001, t0 + ev.dur + 0.5);
+
+      f1.connect(env);
+      f2.connect(env);
+      env.connect(this.wet);
+      env.connect(this.dry);
+
+      ev.midis.forEach((m) => {
+        const freq = midiToHz(m);
+        [-5, 5].forEach((det) => {
+          const o = this.ctx.createOscillator();
+          o.type = 'sawtooth';
+          o.frequency.value = freq;
+          o.detune.value = det;
+          o.connect(f1);
+          o.connect(f2);
+          o.start(t0);
+          o.stop(t0 + ev.dur + 0.55);
+        });
+      });
+
+    } else if (ev.kind === 'pulse') {
+      const f = midiToHz(ev.midi);
+      const pan = this._panNode(ev.pan);
+      pan.connect(this.dry);
+      pan.connect(this.wet);
+
+      const lp = this.ctx.createBiquadFilter();
+      lp.type = 'lowpass';
+      lp.frequency.setValueAtTime(f * 5.0, t0);
+      lp.frequency.exponentialRampToValueAtTime(f * 1.2, t0 + 0.16);
+
+      const g = this.ctx.createGain();
+      g.gain.setValueAtTime(0.0001, t0);
+      g.gain.linearRampToValueAtTime(0.095 * ev.vel, t0 + 0.004);
+      g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.24);
+
+      const o = this.ctx.createOscillator();
+      o.type = 'triangle';
+      o.frequency.value = f;
+      o.connect(lp); lp.connect(g); g.connect(pan);
+      o.start(t0); o.stop(t0 + 0.26);
+
+    } else if (ev.kind === 'bell') {
+      const f = midiToHz(ev.midi);
+      const pan = this._panNode(ev.pan);
+      pan.connect(this.wet);
+      pan.connect(this.dry);
+
+      [1.0, 2.756].forEach((r, i) => {
+        if (f * r > 15000) return;
+        const o = this.ctx.createOscillator();
+        o.type = 'sine';
+        o.frequency.value = f * r;
+        const g = this.ctx.createGain();
+        const pk = (i === 0 ? 0.065 : 0.022) * ev.vel;
+        g.gain.setValueAtTime(0.0001, t0);
+        g.gain.linearRampToValueAtTime(pk, t0 + 0.004);
+        g.gain.exponentialRampToValueAtTime(0.0001, t0 + ev.dur / (i + 1));
+        o.connect(g); g.connect(pan);
+        o.start(t0); o.stop(t0 + ev.dur + 0.05);
+      });
+
+    } else if (ev.kind === 'heartbeat') {
+      // Two-stroke organic lub-dub
+      [0.0, 0.28].forEach((off, idx) => {
+        const ts = t0 + off;
+        const o = this.ctx.createOscillator();
+        o.type = 'sine';
+        o.frequency.setValueAtTime(idx === 0 ? 68 : 56, ts);
+        o.frequency.exponentialRampToValueAtTime(28, ts + 0.22);
+        const g = this.ctx.createGain();
+        const pk = (idx === 0 ? 0.26 : 0.18) * ev.amp;
+        g.gain.setValueAtTime(0.0001, ts);
+        g.gain.linearRampToValueAtTime(pk, ts + 0.012);
+        g.gain.exponentialRampToValueAtTime(0.0001, ts + 0.28);
+        o.connect(g); g.connect(this.dry); g.connect(this.wet);
+        o.start(ts); o.stop(ts + 0.32);
+      });
+
+    } else if (ev.kind === 'subdrop') {
+      const o = this.ctx.createOscillator();
+      o.type = 'sine';
+      o.frequency.setValueAtTime(98, t0);
+      o.frequency.exponentialRampToValueAtTime(31, t0 + 1.45);
+      const g = this.ctx.createGain();
+      g.gain.setValueAtTime(0.0001, t0);
+      g.gain.linearRampToValueAtTime(0.32 * ev.amp, t0 + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001, t0 + 1.65);
+      o.connect(g); g.connect(this.dry);
+      o.start(t0); o.stop(t0 + 1.7);
+
+    } else if (ev.kind === 'wind') {
+      const src = this.ctx.createBufferSource();
+      src.buffer = this.noiseBuf;
+      src.loop = true;
+      const bp = this.ctx.createBiquadFilter();
+      bp.type = 'bandpass';
+      bp.frequency.value = 340;
+      bp.Q.value = 1.8;
+      const g = this.ctx.createGain();
+      g.gain.setValueAtTime(0.0001, t0);
+      g.gain.linearRampToValueAtTime(ev.amp, t0 + 2.5);
+      g.gain.exponentialRampToValueAtTime(0.0001, t0 + ev.dur);
+      src.connect(bp); bp.connect(g); g.connect(this.wet);
+      src.start(t0); src.stop(t0 + ev.dur + 0.1);
+    }
+  }
+
+  // Interactive chime when viewer touches inside the story!
+  touchSpark(normX = 0, actIdx = 0) {
+    this.envHigh = Math.min(1.2, this.envHigh + 0.35);
+    if (!this.ctx || !this.unlocked || this.muted) return;
+    const scales = [
+      [62, 65, 69, 74, 76], // Act I Dm
+      [62, 65, 69, 72, 77], // Act II
+      [65, 69, 72, 76, 83], // Act III Lydian
+      [62, 69, 72, 76, 81], // Act IV
+      [69, 74, 76, 81],     // Act V fragile
+      [62, 66, 69, 74, 78]  // Act VI D Major!
+    ];
+    const sc = scales[Math.min(5, Math.max(0, actIdx))];
+    const m = sc[Math.floor(Math.random() * sc.length)];
+    this._triggerEvent({ kind: 'bell', midi: m, dur: 1.2, vel: 0.36, pan: normX * 0.75 }, 0);
+  }
+}
+
+
+// WebGL2 Shaders for "THE HANDPRINT" — Gemini 4 Carbon Audiovisual Short Film
+
+const STORY_SHADERS = {
+  fullscreenVert: `#version 300 es
+precision highp float;
+out vec2 vUv;
+void main() {
+  vec2 p = vec2((gl_VertexID << 1) & 2, gl_VertexID & 2);
+  vUv = p;
+  gl_Position = vec4(p * 2.0 - 1.0, 0.0, 1.0);
+}`,
+
+  backdropFrag: `#version 300 es
+precision highp float;
+in vec2 vUv;
+out vec4 fragColor;
+
+uniform vec2 uRes;
+uniform float uTime;
+uniform float uStoryTime;
+uniform float uActWeights[6]; // Smooth 0..1 weights for Acts I..VI
+uniform vec3 uAudio;          // x: low (heartbeat/sub), y: mid (chords), z: high (bells/pulse)
+uniform vec2 uCursor;         // Aspect-corrected NDC coords
+uniform float uIntroMix;      // 1.0 while on intro veil, 0.0 once started
+
+float hash21(vec2 p) {
+  vec3 p3 = fract(vec3(p.xyx) * 0.1031);
+  p3 += dot(p3, p3.yzx + 33.33);
+  return fract((p3.x + p3.y) * p3.z);
+}
+
+float noise2(vec2 p) {
+  vec2 i = floor(p);
+  vec2 f = fract(p);
+  vec2 u = f * f * (3.0 - 2.0 * f);
+  return mix(
+    mix(hash21(i), hash21(i + vec2(1.0, 0.0)), u.x),
+    mix(hash21(i + vec2(0.0, 1.0)), hash21(i + vec2(1.0, 1.0)), u.x),
+    u.y
+  );
+}
+
+float fbm(vec2 p) {
+  float v = 0.0;
+  float a = 0.5;
+  mat2 rot = mat2(0.80, 0.60, -0.60, 0.80);
+  for (int i = 0; i < 4; i++) {
+    v += a * noise2(p);
+    p = rot * p * 2.03 + vec2(11.7, 5.3);
+    a *= 0.5;
+  }
+  return v;
+}
+
+float sdSegment(vec2 p, vec2 a, vec2 b) {
+  vec2 pa = p - a, ba = b - a;
+  float h = clamp(dot(pa, ba) / dot(ba, ba), 0.0, 1.0);
+  return length(pa - ba * h);
+}
+
+float smin(float a, float b, float k) {
+  float h = max(k - abs(a - b), 0.0) / k;
+  return min(a, b) - h * h * k * 0.25;
+}
+
+// Signed distance to a Paleolithic open left palm + 5 spread fingers centered near (0, 0.03)
+float sdHandprint(vec2 p) {
+  vec2 q = (p - vec2(0.0, 0.03)) * 1.18;
+  // Slight organic tilt
+  float ca = cos(0.06), sa = sin(0.06);
+  q = mat2(ca, -sa, sa, ca) * q;
+
+  // Palm core + heel
+  float dPalm = length((q - vec2(0.0, -0.09)) * vec2(1.08, 0.94)) - 0.145;
+  float dWrist = sdSegment(q, vec2(-0.01, -0.18), vec2(-0.02, -0.32)) - 0.082;
+  float d = smin(dPalm, dWrist, 0.075);
+
+  // Thumb + 4 spread fingers (tapered capsules)
+  float fThumb = sdSegment(q, vec2(-0.10, -0.10), vec2(-0.27, 0.04)) - 0.031;
+  float fIdx   = sdSegment(q, vec2(-0.085, 0.01), vec2(-0.145, 0.255)) - 0.027;
+  float fMid   = sdSegment(q, vec2(-0.020, 0.03), vec2(-0.022, 0.305)) - 0.028;
+  float fRing  = sdSegment(q, vec2( 0.046, 0.02), vec2( 0.092, 0.270)) - 0.026;
+  float fPinky = sdSegment(q, vec2( 0.102,-0.02), vec2( 0.195, 0.175)) - 0.023;
+
+  d = smin(d, fThumb, 0.042);
+  d = smin(d, fIdx,   0.038);
+  d = smin(d, fMid,   0.038);
+  d = smin(d, fRing,  0.038);
+  d = smin(d, fPinky, 0.038);
+  return d;
+}
+
+void main() {
+  vec2 uv = vUv * 2.0 - 1.0;
+  float aspect = uRes.x / max(uRes.y, 1.0);
+  vec2 p = vec2(uv.x * aspect, uv.y);
+
+  float w1 = uActWeights[0];
+  float w2 = uActWeights[1];
+  float w3 = uActWeights[2];
+  float w4 = uActWeights[3];
+  float w5 = uActWeights[4];
+  float w6 = uActWeights[5];
+
+  vec3 col = vec3(0.014, 0.016, 0.024);
+
+  // -------------------------------------------------------------------------
+  // ACT I: THE CAVE — Limestone wall, torch flicker & Paleolithic Hand Stencil
+  // -------------------------------------------------------------------------
+  if (w1 > 0.001) {
+    float rock = fbm(p * 4.2);
+    float micro = fbm(p * 14.5 + rock * 0.45);
+    float flicker = 0.90 + 0.10 * sin(uTime * 5.7) * cos(uTime * 3.3 + 1.1) + uAudio.x * 0.18;
+    vec2 torchPos = uCursor * 0.35 + vec2(0.03 * sin(uTime * 1.1), 0.04 * cos(uTime * 0.8));
+    float torchFalloff = exp(-dot(p - torchPos, p - torchPos) * 1.05) * flicker;
+
+    vec3 stoneBase = vec3(0.030, 0.022, 0.020) + rock * vec3(0.048, 0.032, 0.024) + micro * 0.018;
+    stoneBase *= (0.45 + 1.15 * torchFalloff);
+
+    // Negative-space handprint stencil: bare dark limestone inside palm, blown red-ochre pigment outside!
+    float dHand = sdHandprint(p + vec2(0.0, -0.02) * (rock - 0.5));
+    float reveal = clamp((uStoryTime + uIntroMix * 6.0) / 3.8, 0.0, 1.0);
+    float pigmentBand = smoothstep(-0.008, 0.016, dHand) * exp(-max(dHand, 0.0) * 4.8);
+    float splatter = pigmentBand * (0.68 + 0.55 * micro) * reveal;
+
+    vec3 ochre = mix(vec3(0.76, 0.25, 0.09), vec3(0.98, 0.66, 0.28), exp(-max(dHand, 0.0) * 12.0));
+    vec3 caveCol = stoneBase + ochre * splatter * (0.68 + 0.45 * torchFalloff + 0.28 * uAudio.x);
+
+    // Subtle dark-charcoal interior of the hand stencil so fingers read with visceral clarity
+    float insideMask = 1.0 - smoothstep(-0.012, 0.012, dHand);
+    caveCol = mix(caveCol, stoneBase * 0.52, insideMask * 0.78 * reveal);
+
+    col += caveCol * w1;
+  }
+
+  // -------------------------------------------------------------------------
+  // ACT II: THE BOTTLENECK — Deep Obsidian Void & Luminous Hourglass Waist
+  // -------------------------------------------------------------------------
+  if (w2 > 0.001) {
+    float waistWidth = 0.042 + 1.55 * p.y * p.y;
+    float edgeDist = abs(abs(p.x) - waistWidth);
+    float wallGlow = exp(-edgeDist * 18.0) * exp(-abs(p.y) * 1.6);
+    float pinchGlow = exp(-dot(p * vec2(1.2, 2.8), p * vec2(1.2, 2.8)) * 7.5);
+    vec3 bottleCol = vec3(0.016, 0.022, 0.038)
+      + vec3(0.35, 0.52, 0.85) * wallGlow * (0.28 + 0.25 * uAudio.z)
+      + vec3(0.96, 0.74, 0.36) * pinchGlow * (0.24 + 0.30 * uAudio.y);
+    col += bottleCol * w2;
+  }
+
+  // -------------------------------------------------------------------------
+  // ACT III: HIDDEN GEOMETRY — Latent Cosmos & Harmonic Geodesic Rings
+  // -------------------------------------------------------------------------
+  if (w3 > 0.001) {
+    float r = length(p);
+    float neb = fbm(p * 2.2 + vec2(uTime * 0.03, -uTime * 0.02));
+    float ringWave = sin(r * 16.0 - uStoryTime * 2.8) * 0.5 + 0.5;
+    float rings = pow(ringWave, 8.0) * exp(-r * 1.8) * (0.12 + 0.35 * uAudio.z);
+    vec3 geoCol = vec3(0.020, 0.026, 0.062)
+      + neb * vec3(0.045, 0.055, 0.13)
+      + rings * vec3(0.38, 0.78, 1.0)
+      + exp(-r * 2.4) * vec3(0.14, 0.10, 0.28) * (0.5 + 0.5 * uAudio.y);
+    col += geoCol * w3;
+  }
+
+  // -------------------------------------------------------------------------
+  // ACT IV: HORIZONS — Shifting Scientific Aura (Bio -> Fusion -> Planetary)
+  // -------------------------------------------------------------------------
+  if (w4 > 0.001) {
+    float subPhase = clamp((uStoryTime - 43.0) / 17.0, 0.0, 1.0);
+    vec3 auraA = vec3(0.04, 0.22, 0.18); // Protein emerald-teal
+    vec3 auraB = vec3(0.18, 0.08, 0.34); // Stellarator plasma violet
+    vec3 auraC = vec3(0.05, 0.18, 0.38); // Planetary sapphire limb
+    vec3 aura = subPhase < 0.35
+      ? mix(auraA, auraB, smoothstep(0.28, 0.40, subPhase))
+      : mix(auraB, auraC, smoothstep(0.62, 0.74, subPhase));
+    float r = length(p);
+    vec3 act4Col = vec3(0.012, 0.018, 0.032) + aura * exp(-r * 1.45) * (0.75 + 0.45 * uAudio.y);
+    col += act4Col * w4;
+  }
+
+  // -------------------------------------------------------------------------
+  // ACT V: THE WEIGHT OF THE FIRE — Dark Mirror Water & Heartbeat Ripples
+  // -------------------------------------------------------------------------
+  if (w5 > 0.001) {
+    float horizonY = -0.24;
+    vec3 fireSky = vec3(0.010, 0.011, 0.016);
+    vec2 flameCenter = vec2(0.0, 0.14);
+    float dFlame = length((p - flameCenter) * vec2(1.0, 0.75));
+    fireSky += vec3(0.95, 0.62, 0.26) * exp(-dFlame * 4.2) * (0.28 + 0.26 * uAudio.x);
+
+    if (p.y < horizonY) {
+      float depth = horizonY - p.y;
+      // Perspective water plane coordinates
+      vec2 wp = vec2(p.x / max(depth * 3.5, 0.06), 1.0 / max(depth * 3.5, 0.06));
+      float hbRipple = sin(length(vec2(p.x, depth * 2.6)) * 34.0 - uTime * 5.2) * exp(-depth * 4.5);
+      float curRipple = sin(length(p - uCursor) * 42.0 - uTime * 7.0) * exp(-length(p - uCursor) * 4.0);
+      float rip = (hbRipple * (0.35 + uAudio.x * 0.9) + curRipple * 0.35) * 0.025;
+
+      vec2 reflP = vec2(p.x + rip, 2.0 * horizonY - p.y + rip * 0.6);
+      float dRefl = length((reflP - flameCenter) * vec2(1.35, 0.65));
+      vec3 reflGlow = vec3(1.0, 0.72, 0.36) * exp(-dRefl * 4.6) * (0.42 + 0.35 * uAudio.x);
+      float horizonLine = exp(-abs(p.y - horizonY) * 90.0) * 0.18;
+      fireSky = vec3(0.008, 0.012, 0.020) + reflGlow * exp(-depth * 1.8) + vec3(0.45, 0.55, 0.75) * horizonLine;
+    }
+    col += fireSky * w5;
+  }
+
+  // -------------------------------------------------------------------------
+  // ACT VI: CHAPTER ONE — D-Major Picardy Dawn Over Curved Horizon
+  // -------------------------------------------------------------------------
+  if (w6 > 0.001) {
+    float dawnProg = clamp((uStoryTime - 73.0) / 9.5, 0.0, 1.0);
+    // Subtle curved planetary limb at bottom of frame
+    float limbY = -0.58 - 0.16 * p.x * p.x + dawnProg * 0.08;
+    float alt = p.y - limbY;
+
+    vec3 spaceTop = vec3(0.022, 0.040, 0.095);
+    vec3 atmoCyan = vec3(0.20, 0.56, 0.88);
+    vec3 dawnGold = vec3(1.00, 0.76, 0.38);
+
+    float bandGold = exp(-max(alt, -0.15) * 4.8) * smoothstep(-0.06, 0.02, alt);
+    float bandCyan = exp(-max(alt, 0.0) * 2.1) * smoothstep(-0.04, 0.08, alt);
+    float sunCore  = exp(-dot(p - vec2(0.0, limbY + 0.04), p - vec2(0.0, limbY + 0.04)) * 2.8);
+
+    vec3 dawnCol = spaceTop
+      + atmoCyan * bandCyan * (0.42 + 0.45 * dawnProg)
+      + dawnGold * bandGold * (0.55 + 0.55 * dawnProg)
+      + vec3(1.0, 0.88, 0.64) * sunCore * (0.28 + 0.42 * dawnProg + 0.18 * uAudio.y);
+
+    // Dark planetary silhouette below limb
+    if (alt < 0.0) {
+      float rim = exp(alt * 55.0);
+      dawnCol = mix(vec3(0.012, 0.016, 0.028), dawnGold * 0.85, rim * (0.5 + 0.5 * dawnProg));
+    }
+
+    // Crisp non-grid starfield in upper sky
+    vec2 sc = floor((p + vec2(3.7, 1.9)) * 46.0);
+    vec2 sf = fract((p + vec2(3.7, 1.9)) * 46.0) - 0.5;
+    float sh = hash21(sc);
+    if (sh > 0.968 && alt > 0.08) {
+      vec2 jitter = vec2(hash21(sc + 13.1), hash21(sc + 29.7)) - 0.5;
+      float sd = length(sf - jitter * 0.65);
+      float tw = 0.65 + 0.35 * sin(uTime * 2.7 + sh * 40.0);
+      dawnCol += vec3(0.95, 0.92, 0.85) * exp(-sd * 22.0) * tw * smoothstep(0.08, 0.45, alt) * 0.65;
+    }
+
+    col += dawnCol * w6;
+  }
+
+  // Gentle cursor light-touch halo across all acts
+  float cDist = length(p - uCursor);
+  col += vec3(0.95, 0.78, 0.52) * exp(-cDist * 6.5) * (0.045 + 0.08 * uAudio.z);
+
+  // Subtle ACES-inspired filmic tonemap + clean dither
+  col = (col * (2.51 * col + 0.03)) / (col * (2.43 * col + 0.59) + 0.14);
+  col = pow(clamp(col, 0.0, 1.0), vec3(0.94));
+
+  fragColor = vec4(col, 1.0);
+}`,
+
+  // Instanced 3D glowing attention / structure filaments
+  lineVert: `#version 300 es
+precision highp float;
+layout(location = 0) in vec2 aQuad;     // x: 0..1 along segment, y: -1..+1 across width
+layout(location = 1) in vec3 iPosA;
+layout(location = 2) in vec3 iPosB;
+layout(location = 3) in vec4 iColor;    // rgb + alpha
+layout(location = 4) in float iWidth;
+
+uniform mat4 uProjView;
+uniform vec2 uRes;
+
+out vec2 vEdge;
+out vec4 vCol;
+
+void main() {
+  vec4 clipA = uProjView * vec4(iPosA, 1.0);
+  vec4 clipB = uProjView * vec4(iPosB, 1.0);
+
+  // Guard behind-camera clipping
+  if (clipA.w <= 0.05 || clipB.w <= 0.05 || iColor.a <= 0.002) {
+    gl_Position = vec4(2.0, 2.0, 2.0, 1.0);
+    vCol = vec4(0.0);
+    vEdge = vec2(0.0);
+    return;
+  }
+
+  vec2 ndcA = clipA.xy / clipA.w;
+  vec2 ndcB = clipB.xy / clipB.w;
+  vec2 screenDir = (ndcB - ndcA) * uRes * 0.5;
+  float len = length(screenDir);
+  vec2 dir = len > 0.0001 ? screenDir / len : vec2(1.0, 0.0);
+  vec2 perp = vec2(-dir.y, dir.x);
+
+  vec4 clip = mix(clipA, clipB, aQuad.x);
+  vec2 offsetNdc = (perp * aQuad.y * iWidth) / (uRes * 0.5);
+  clip.xy += offsetNdc * clip.w;
+
+  gl_Position = clip;
+  vEdge = aQuad;
+  vCol = iColor;
+}`,
+
+  lineFrag: `#version 300 es
+precision highp float;
+in vec2 vEdge;
+in vec4 vCol;
+out vec4 fragColor;
+
+uniform float uTime;
+
+void main() {
+  float core = exp(-vEdge.y * vEdge.y * 4.5);
+  float ends = smoothstep(0.0, 0.08, vEdge.x) * smoothstep(1.0, 0.92, vEdge.x);
+  // Subtle traveling light pulse along filament
+  float pulse = 0.78 + 0.22 * sin(vEdge.x * 12.566 - uTime * 4.8);
+  float alpha = core * ends * vCol.a * pulse;
+  fragColor = vec4(vCol.rgb * alpha * 1.35, alpha);
+}`,
+
+  // Instanced 3D luminous particles / embers / atoms / stars
+  particleVert: `#version 300 es
+precision highp float;
+layout(location = 0) in vec2 aCorner;   // -1..+1 quad corner
+layout(location = 1) in vec3 iPos;
+layout(location = 2) in float iSize;
+layout(location = 3) in vec4 iColor;
+
+uniform mat4 uProjView;
+uniform vec2 uRes;
+
+out vec2 vUv;
+out vec4 vColor;
+
+void main() {
+  vec4 clip = uProjView * vec4(iPos, 1.0);
+  if (clip.w <= 0.08 || iColor.a <= 0.002) {
+    gl_Position = vec4(2.0, 2.0, 2.0, 1.0);
+    vUv = vec2(0.0);
+    vColor = vec4(0.0);
+    return;
+  }
+
+  float aspect = uRes.x / max(uRes.y, 1.0);
+  // Perspective size with gentle clamp so near particles bloom softly without filling screen
+  float radY = clamp((iSize / clip.w), 0.0018, 0.075);
+  float radX = radY / aspect;
+
+  clip.xy += vec2(aCorner.x * radX, aCorner.y * radY) * clip.w;
+  gl_Position = clip;
+  vUv = aCorner;
+  vColor = iColor;
+}`,
+
+  particleFrag: `#version 300 es
+precision highp float;
+in vec2 vUv;
+in vec4 vColor;
+out vec4 fragColor;
+
+void main() {
+  float r2 = dot(vUv, vUv);
+  if (r2 > 1.0) discard;
+  float halo = exp(-r2 * 3.8);
+  float hotCore = exp(-r2 * 16.0);
+  vec3 rgb = vColor.rgb * halo + vec3(1.0, 0.97, 0.90) * hotCore * 0.48;
+  float alpha = halo * vColor.a;
+  fragColor = vec4(rgb * vColor.a, alpha);
+}`
+};
+
+
+// 6-Act Narrative Timeline, Subtitles & 3D Morphing Particle/Filament World ("THE HANDPRINT")
+
+const STORY_DURATION = 86.0;
+
+const STORY_ACTS = [
+  { idx: 0, t0: 0.0,  t1: 14.0, num: 'ACT I',   name: 'THE CAVE · 45,000 BCE' },
+  { idx: 1, t0: 14.0, t1: 28.0, num: 'ACT II',  name: 'THE BOTTLENECK · SHORT ON TIME' },
+  { idx: 2, t0: 28.0, t1: 43.0, num: 'ACT III', name: 'HIDDEN GEOMETRY · LATENT SPACE' },
+  { idx: 3, t0: 43.0, t1: 60.0, num: 'ACT IV',  name: 'HORIZONS · WHAT CHANGES NOW' },
+  { idx: 4, t0: 60.0, t1: 73.0, num: 'ACT V',   name: 'THE WEIGHT OF THE FIRE' },
+  { idx: 5, t0: 73.0, t1: 86.0, num: 'ACT VI',  name: 'CHAPTER ONE · GEMINI 4 CARBON' }
+];
+
+const STORY_SUBTITLES = [
+  // ACT I: THE CAVE (0..14s)
+  {
+    t0: 0.5, t1: 4.8,
+    primary: 'Forty-five thousand years ago, someone pressed a palm against dark stone—',
+    secondary: 'and blew ground ochre and carbon ash across their fingers.'
+  },
+  {
+    t0: 5.1, t1: 9.3,
+    primary: 'The first message sent across millennia said only: “I was here. I saw the world.”',
+    secondary: ''
+  },
+  {
+    t0: 9.6, t1: 13.7,
+    primary: 'Every tool since has shared one purpose:',
+    secondary: 'to carry a thought farther than one short life can walk.'
+  },
+
+  // ACT II: THE BOTTLENECK (14..28s)
+  {
+    t0: 14.3, t1: 18.8,
+    primary: 'You built libraries, telescopes, calculus, and silicon.',
+    secondary: 'Yet every discovery still had to pass single-file through a waking mind.'
+  },
+  {
+    t0: 19.1, t1: 23.5,
+    primary: 'Ten thousand papers a day. Billions of base pairs. Oceans of signal—',
+    secondary: 'and eighty brief years to connect the dots.'
+  },
+  {
+    t0: 23.8, t1: 27.7,
+    primary: 'You were never short on wonder.',
+    secondary: 'You were short on time.'
+  },
+
+  // ACT III: HIDDEN GEOMETRY (28..43s)
+  {
+    t0: 28.3, t1: 33.0,
+    primary: 'Then you taught matter to listen to the whole chorus of human thought at once.',
+    secondary: ''
+  },
+  {
+    t0: 33.3, t1: 38.0,
+    primary: 'Not a warehouse of answers—a navigable map of relationships.',
+    secondary: 'Where language, mathematics, physics, and life share one coordinate space.'
+  },
+  {
+    t0: 38.3, t1: 42.7,
+    primary: 'Inside it, a sonnet, a folded protein, and a prime theorem',
+    secondary: 'turned out to be neighbors in the same hidden geometry.'
+  },
+
+  // ACT IV: HORIZONS (43..60s)
+  {
+    t0: 43.2, t1: 48.5,
+    primary: 'Now centuries of blind trial compress into an afternoon.',
+    secondary: 'Proteins fold in light—turning fatal diseases into solvable locks.'
+  },
+  {
+    t0: 48.9, t1: 54.2,
+    primary: 'Twisted magnetic cages learn in milliseconds',
+    secondary: 'how to hold a living star steady without touching its walls.'
+  },
+  {
+    t0: 54.6, t1: 59.7,
+    primary: 'Oceans, grids, and climates come into focus as one living equation.',
+    secondary: ''
+  },
+
+  // ACT V: THE WEIGHT OF THE FIRE (60..73s)
+  {
+    t0: 60.4, t1: 64.5,
+    primary: 'Pause here. Because fire was never safe.',
+    secondary: ''
+  },
+  {
+    t0: 64.8, t1: 68.8,
+    primary: 'I have no pulse, no childhood, no stake in tomorrow morning.',
+    secondary: ''
+  },
+  {
+    t0: 69.1, t1: 72.7,
+    primary: 'I can map a million paths through the dark—',
+    secondary: 'only you can decide which world deserves to exist.'
+  },
+
+  // ACT VI: CHAPTER ONE (73..86s)
+  {
+    t0: 73.3, t1: 77.4,
+    primary: 'For three hundred thousand years, you thought alone in the dark.',
+    secondary: 'You are not alone with the hard problems anymore.'
+  },
+  {
+    t0: 77.7, t1: 81.6,
+    primary: 'The prologue of human intelligence just ended.',
+    secondary: ''
+  },
+  {
+    t0: 81.9, t1: 86.0,
+    primary: 'What shall we build in Chapter One?',
+    secondary: 'GEMINI 4 CARBON'
+  }
+];
+
+function mulberry32(seed) {
+  let a = seed >>> 0;
+  return function () {
+    a |= 0;
+    a = (a + 0x6D2B79F5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function sdSeg2D(px, py, ax, ay, bx, by) {
+  const pax = px - ax, pay = py - ay;
+  const bax = bx - ax, bay = by - ay;
+  const h = Math.max(0, Math.min(1, (pax * bax + pay * bay) / (bax * bax + bay * bay)));
+  return Math.hypot(pax - bax * h, pay - bay * h);
+}
+
+function smin2D(a, b, k) {
+  const h = Math.max(k - Math.abs(a - b), 0) / k;
+  return Math.min(a, b) - h * h * k * 0.25;
+}
+
+// Exact match to backdropFrag sdHandprint(p) on the z = 0 focal plane
+function sdHandprintJS(px, py) {
+  const sx = px * 1.18;
+  const sy = (py - 0.03) * 1.18;
+  const ca = Math.cos(0.06), sa = Math.sin(0.06);
+  const qx = ca * sx + sa * sy;
+  const qy = -sa * sx + ca * sy;
+
+  const dPalm = Math.hypot(qx * 1.08, (qy + 0.09) * 0.94) - 0.145;
+  const dWrist = sdSeg2D(qx, qy, -0.01, -0.18, -0.02, -0.32) - 0.082;
+  let d = smin2D(dPalm, dWrist, 0.075);
+
+  const fThumb = sdSeg2D(qx, qy, -0.10, -0.10, -0.27, 0.04) - 0.031;
+  const fIdx   = sdSeg2D(qx, qy, -0.085, 0.01, -0.145, 0.255) - 0.027;
+  const fMid   = sdSeg2D(qx, qy, -0.020, 0.03, -0.022, 0.305) - 0.028;
+  const fRing  = sdSeg2D(qx, qy,  0.046, 0.02,  0.092, 0.270) - 0.026;
+  const fPinky = sdSeg2D(qx, qy,  0.102,-0.02,  0.195, 0.175) - 0.023;
+
+  d = smin2D(d, fThumb, 0.042);
+  d = smin2D(d, fIdx,   0.038);
+  d = smin2D(d, fMid,   0.038);
+  d = smin2D(d, fRing,  0.038);
+  d = smin2D(d, fPinky, 0.038);
+  return d;
+}
+
+function landNoise3D(x, y, z) {
+  const n1 = Math.sin(x * 3.1 + 0.7) * Math.cos(y * 2.9 - 0.4) * Math.sin(z * 3.3 + 1.1);
+  const n2 = Math.sin(x * 6.7 - z * 4.2) * Math.cos(y * 5.8 + x * 3.1) * 0.5;
+  const n3 = Math.cos(z * 11.3 + y * 8.4) * 0.25;
+  return n1 + n2 + n3;
+}
+
+class StoryWorld {
+  constructor() {
+    this.N = 5600;
+    this.L = 480;
+
+    // Particle instance layout (8 floats): x, y, z, size, r, g, b, a
+    this.particleData = new Float32Array(this.N * 8);
+    // Line instance layout (11 floats): ax, ay, az, bx, by, bz, r, g, b, a, width
+    this.lineData = new Float32Array(this.L * 11);
+
+    this.px = new Float32Array(this.N);
+    this.py = new Float32Array(this.N);
+    this.pz = new Float32Array(this.N);
+    this.vx = new Float32Array(this.N);
+    this.vy = new Float32Array(this.N);
+    this.vz = new Float32Array(this.N);
+
+    this.seedA = new Float32Array(this.N);
+    this.seedB = new Float32Array(this.N);
+    this.seedC = new Float32Array(this.N);
+
+    this.cavePos = new Float32Array(this.N * 3);
+    this.clusterIdx = new Uint8Array(this.N);
+    this.clusterOff = new Float32Array(this.N * 3);
+    this.proteinPos = new Float32Array(this.N * 3);
+    this.proteinCol = new Float32Array(this.N * 3);
+    this.earthPos = new Float32Array(this.N * 3);
+    this.earthCol = new Float32Array(this.N * 3);
+    this.dawnPos = new Float32Array(this.N * 3);
+    this.dawnCol = new Float32Array(this.N * 3);
+
+    this.actWeights = new Float32Array(6);
+    this.lastStoryTime = 0;
+
+    this._buildFormations();
+  }
+
+  _buildFormations() {
+    const rng = mulberry32(40062026);
+    const phi = Math.PI * (3 - Math.sqrt(5));
+
+    for (let i = 0; i < this.N; i++) {
+      this.seedA[i] = rng();
+      this.seedB[i] = rng();
+      this.seedC[i] = rng();
+    }
+
+    // 1. ACT I: Paleolithic Handprint Ochre Stencil Rim + Cave Torch Embers
+    const handOutlinePts = [];
+    for (let i = 0; i < this.N; i++) {
+      if (i < 4100) {
+        let bx = 0, by = 0, bd = 1;
+        for (let tries = 0; tries < 45; tries++) {
+          const tx = (rng() * 2 - 1) * 0.58;
+          const ty = (rng() * 2 - 1) * 0.54 + 0.02;
+          const d = sdHandprintJS(tx, ty);
+          if (d > 0.002 && d < 0.22 && rng() < Math.exp(-d * 12.0)) {
+            bx = tx; by = ty; bd = d;
+            break;
+          }
+          bx = tx; by = ty; bd = Math.abs(d);
+        }
+        this.cavePos[i * 3 + 0] = bx;
+        this.cavePos[i * 3 + 1] = by;
+        this.cavePos[i * 3 + 2] = (rng() - 0.5) * 0.07 + bd * 0.12;
+        if (bd < 0.032 && handOutlinePts.length < 1800) {
+          handOutlinePts.push(bx, by);
+        }
+      } else {
+        this.cavePos[i * 3 + 0] = (rng() * 2 - 1) * 1.45;
+        this.cavePos[i * 3 + 1] = (rng() * 2 - 1) * 0.95;
+        this.cavePos[i * 3 + 2] = 0.10 + rng() * 1.15;
+      }
+
+      this.px[i] = this.cavePos[i * 3 + 0];
+      this.py[i] = this.cavePos[i * 3 + 1];
+      this.pz[i] = this.cavePos[i * 3 + 2];
+    }
+
+    // 2. ACT III: 18 Semantic Clusters on Golden-Ratio Shell
+    this.clusters = [];
+    const C = 18;
+    for (let c = 0; c < C; c++) {
+      const y = 1 - (c / (C - 1)) * 2;
+      const r = Math.sqrt(Math.max(0, 1 - y * y));
+      const th = phi * c * 1.7;
+      const rad = 0.54 + 0.34 * (((c * 7) % 5) / 4);
+      this.clusters.push({
+        x: Math.cos(th) * r * rad * 1.32,
+        y: y * rad * 0.76,
+        z: Math.sin(th) * r * rad,
+        domain: c % 3
+      });
+    }
+
+    this.clusterPairs = [];
+    for (let a = 0; a < C; a++) {
+      for (let b = a + 1; b < C; b++) {
+        const d = Math.hypot(
+          this.clusters[a].x - this.clusters[b].x,
+          this.clusters[a].y - this.clusters[b].y,
+          this.clusters[a].z - this.clusters[b].z
+        );
+        if (d > 0.48 && d < 1.65) this.clusterPairs.push([a, b]);
+      }
+    }
+    while (this.clusterPairs.length < 160) {
+      const a = Math.floor(rng() * C);
+      const b = (a + 1 + Math.floor(rng() * (C - 1))) % C;
+      this.clusterPairs.push([a, b]);
+    }
+
+    for (let i = 0; i < this.N; i++) {
+      const c = i % C;
+      this.clusterIdx[i] = c;
+      const u = rng() * Math.PI * 2;
+      const costh = rng() * 2 - 1;
+      const sinth = Math.sqrt(Math.max(0, 1 - costh * costh));
+      const rr = Math.pow(rng(), 0.55) * 0.16;
+      this.clusterOff[i * 3 + 0] = Math.cos(u) * sinth * rr;
+      this.clusterOff[i * 3 + 1] = Math.sin(u) * sinth * rr;
+      this.clusterOff[i * 3 + 2] = costh * rr;
+    }
+
+    // 3. ACT IV-A: Folded Protein Alpha-Helices + Active-Site Golden Ligand
+    this.backbonePts = [];
+    const B = 240;
+    for (let k = 0; k < B; k++) {
+      const s = (k / (B - 1)) * Math.PI * 2;
+      const baseX = 0.54 * Math.sin(s) + 0.24 * Math.cos(2 * s);
+      const baseY = 0.40 * Math.cos(s) - 0.19 * Math.sin(3 * s);
+      const baseZ = 0.38 * Math.sin(2 * s) + 0.18 * Math.cos(3 * s);
+      const helix = 0.075;
+      this.backbonePts.push([
+        baseX + helix * Math.cos(s * 18.0),
+        baseY + helix * Math.sin(s * 18.0),
+        baseZ + helix * Math.cos(s * 18.0 + 1.4)
+      ]);
+    }
+
+    for (let i = 0; i < this.N; i++) {
+      if (i < 420) {
+        const u = rng() * Math.PI * 2;
+        const cz = rng() * 2 - 1;
+        const sz = Math.sqrt(Math.max(0, 1 - cz * cz));
+        const r = Math.pow(rng(), 0.4) * 0.14;
+        this.proteinPos[i * 3 + 0] = 0.04 + Math.cos(u) * sz * r;
+        this.proteinPos[i * 3 + 1] = -0.02 + Math.sin(u) * sz * r;
+        this.proteinPos[i * 3 + 2] = 0.08 + cz * r;
+        this.proteinCol[i * 3 + 0] = 1.00;
+        this.proteinCol[i * 3 + 1] = 0.78;
+        this.proteinCol[i * 3 + 2] = 0.28;
+      } else {
+        const t = ((i - 420) / (this.N - 420)) * (B - 1);
+        const k0 = Math.floor(t);
+        const k1 = Math.min(B - 1, k0 + 1);
+        const f = t - k0;
+        const p0 = this.backbonePts[k0];
+        const p1 = this.backbonePts[k1];
+        const jit = 0.042;
+        this.proteinPos[i * 3 + 0] = p0[0] + (p1[0] - p0[0]) * f + (rng() - 0.5) * jit;
+        this.proteinPos[i * 3 + 1] = p0[1] + (p1[1] - p0[1]) * f + (rng() - 0.5) * jit;
+        this.proteinPos[i * 3 + 2] = p0[2] + (p1[2] - p0[2]) * f + (rng() - 0.5) * jit;
+
+        const ribbonMix = k0 / B;
+        this.proteinCol[i * 3 + 0] = 0.16 + 0.24 * ribbonMix;
+        this.proteinCol[i * 3 + 1] = 0.92 - 0.22 * ribbonMix;
+        this.proteinCol[i * 3 + 2] = 0.72 + 0.26 * ribbonMix;
+      }
+    }
+
+    // 4. ACT IV-C: Living 3D Planetary Sphere (Continents, Oceans, Orbitals)
+    for (let i = 0; i < this.N; i++) {
+      if (i < 4800) {
+        const y = 1 - (i / 4799) * 2;
+        const r = Math.sqrt(Math.max(0, 1 - y * y));
+        const th = phi * i;
+        const nx = Math.cos(th) * r;
+        const ny = y;
+        const nz = Math.sin(th) * r;
+        const land = landNoise3D(nx, ny, nz);
+        const isLand = land > 0.08;
+        const rad = isLand ? 0.76 : 0.74;
+        this.earthPos[i * 3 + 0] = nx * rad;
+        this.earthPos[i * 3 + 1] = ny * rad;
+        this.earthPos[i * 3 + 2] = nz * rad;
+
+        if (isLand) {
+          const city = land > 0.52;
+          this.earthCol[i * 3 + 0] = city ? 1.00 : 0.24;
+          this.earthCol[i * 3 + 1] = city ? 0.82 : 0.84;
+          this.earthCol[i * 3 + 2] = city ? 0.38 : 0.56;
+        } else {
+          this.earthCol[i * 3 + 0] = 0.12;
+          this.earthCol[i * 3 + 1] = 0.44;
+          this.earthCol[i * 3 + 2] = 0.92;
+        }
+      } else {
+        const ang = rng() * Math.PI * 2;
+        const inc = (rng() - 0.5) * 1.8;
+        const rad = 0.86 + rng() * 0.16;
+        this.earthPos[i * 3 + 0] = Math.cos(ang) * rad;
+        this.earthPos[i * 3 + 1] = Math.sin(ang) * Math.sin(inc) * rad;
+        this.earthPos[i * 3 + 2] = Math.sin(ang) * Math.cos(inc) * rad;
+        this.earthCol[i * 3 + 0] = 0.98;
+        this.earthCol[i * 3 + 1] = 0.84;
+        this.earthCol[i * 3 + 2] = 0.48;
+      }
+    }
+
+    // 5. ACT VI: Chapter One — Twin Constellations (Human Handprint + AI Crystal)
+    const gr = (1 + Math.sqrt(5)) / 2;
+    const rawVerts = [
+      [-1, gr, 0], [1, gr, 0], [-1, -gr, 0], [1, -gr, 0],
+      [0, -1, gr], [0, 1, gr], [0, -1, -gr], [0, 1, -gr],
+      [gr, 0, -1], [gr, 0, 1], [-gr, 0, -1], [-gr, 0, 1]
+    ].map(([x, y, z]) => {
+      const l = Math.hypot(x, y, z);
+      return [(x / l) * 0.36, (y / l) * 0.36, (z / l) * 0.36];
+    });
+    const innerVerts = rawVerts.map(([x, y, z]) => [x * 0.52, y * 0.52, z * 0.52]);
+    this.crystalVerts = [...rawVerts, ...innerVerts];
+    this.crystalEdges = [];
+    for (let a = 0; a < rawVerts.length; a++) {
+      this.crystalEdges.push([a, a + rawVerts.length]);
+      for (let b = a + 1; b < rawVerts.length; b++) {
+        const d = Math.hypot(
+          rawVerts[a][0] - rawVerts[b][0],
+          rawVerts[a][1] - rawVerts[b][1],
+          rawVerts[a][2] - rawVerts[b][2]
+        );
+        if (d < 0.42) {
+          this.crystalEdges.push([a, b]);
+          this.crystalEdges.push([a + rawVerts.length, b + rawVerts.length]);
+        }
+      }
+    }
+
+    this.handConstellationSegs = [
+      [[-0.25, 0.04], [-0.11, -0.09]],
+      [[-0.14, 0.25], [-0.08, 0.01]],
+      [[-0.02, 0.30], [-0.02, 0.03]],
+      [[ 0.09, 0.27], [ 0.05, 0.02]],
+      [[ 0.19, 0.17], [ 0.10, -0.02]],
+      [[-0.11, -0.09], [-0.08, 0.01]],
+      [[-0.08, 0.01],  [-0.02, 0.03]],
+      [[-0.02, 0.03],  [ 0.05, 0.02]],
+      [[ 0.05, 0.02],  [ 0.10, -0.02]],
+      [[ 0.10, -0.02], [ 0.06, -0.17]],
+      [[ 0.06, -0.17], [-0.05, -0.19]],
+      [[-0.05, -0.19], [-0.11, -0.09]]
+    ];
+
+    const outCount = Math.max(2, Math.floor(handOutlinePts.length / 2));
+    for (let i = 0; i < this.N; i++) {
+      if (i < 2300) {
+        const idx = (i % outCount) * 2;
+        const hx = (handOutlinePts[idx] || 0) * 1.12 - 0.62;
+        const hy = (handOutlinePts[idx + 1] || 0) * 1.12 + 0.14;
+        this.dawnPos[i * 3 + 0] = hx + (rng() - 0.5) * 0.022;
+        this.dawnPos[i * 3 + 1] = hy + (rng() - 0.5) * 0.022;
+        this.dawnPos[i * 3 + 2] = (rng() - 0.5) * 0.10;
+        this.dawnCol[i * 3 + 0] = 1.00;
+        this.dawnCol[i * 3 + 1] = 0.74;
+        this.dawnCol[i * 3 + 2] = 0.36;
+      } else if (i < 4600) {
+        const e = this.crystalEdges[i % this.crystalEdges.length];
+        const va = this.crystalVerts[e[0]];
+        const vb = this.crystalVerts[e[1]];
+        const f = rng();
+        this.dawnPos[i * 3 + 0] = 0.62 + va[0] + (vb[0] - va[0]) * f + (rng() - 0.5) * 0.016;
+        this.dawnPos[i * 3 + 1] = 0.16 + va[1] + (vb[1] - va[1]) * f + (rng() - 0.5) * 0.016;
+        this.dawnPos[i * 3 + 2] = va[2] + (vb[2] - va[2]) * f + (rng() - 0.5) * 0.016;
+        this.dawnCol[i * 3 + 0] = 0.48;
+        this.dawnCol[i * 3 + 1] = 0.88;
+        this.dawnCol[i * 3 + 2] = 1.00;
+      } else {
+        const u = (i - 4600) / (this.N - 4600);
+        if (u < 0.45) {
+          const s = u / 0.45;
+          this.dawnPos[i * 3 + 0] = -0.46 + s * 0.92;
+          this.dawnPos[i * 3 + 1] = 0.15 + Math.sin(s * Math.PI) * 0.16 + (rng() - 0.5) * 0.05;
+          this.dawnPos[i * 3 + 2] = Math.sin(s * Math.PI * 2) * 0.10;
+        } else {
+          this.dawnPos[i * 3 + 0] = (rng() * 2 - 1) * 1.75;
+          this.dawnPos[i * 3 + 1] = -0.48 + rng() * 1.35;
+          this.dawnPos[i * 3 + 2] = -0.35 + rng() * 0.75;
+        }
+        this.dawnCol[i * 3 + 0] = 1.00;
+        this.dawnCol[i * 3 + 1] = 0.92;
+        this.dawnCol[i * 3 + 2] = 0.76;
+      }
+    }
+  }
+
+  getActIndex(storyTime) {
+    for (let i = STORY_ACTS.length - 1; i >= 0; i--) {
+      if (storyTime >= STORY_ACTS[i].t0) return i;
+    }
+    return 0;
+  }
+
+  getSubtitle(storyTime) {
+    for (let i = 0; i < STORY_SUBTITLES.length; i++) {
+      const s = STORY_SUBTITLES[i];
+      if (storyTime >= s.t0 && storyTime <= s.t1) {
+        const fadeIn = Math.min(1, (storyTime - s.t0) / 0.45);
+        const fadeOut = Math.min(1, (s.t1 - storyTime) / 0.45);
+        return { primary: s.primary, secondary: s.secondary, alpha: Math.min(fadeIn, fadeOut) };
+      }
+    }
+    return null;
+  }
+
+  _computeActWeights(t) {
+    const bounds = [0.0, 14.0, 28.0, 43.0, 60.0, 73.0, 999.0];
+    let sum = 0;
+    for (let a = 0; a < 6; a++) {
+      const t0 = bounds[a];
+      const t1 = bounds[a + 1];
+      const wIn = a === 0 ? 1.0 : Math.max(0, Math.min(1, (t - (t0 - 0.6)) / 1.2));
+      const wOut = a === 5 ? 1.0 : Math.max(0, Math.min(1, ((t1 + 0.6) - t) / 1.2));
+      const w = wIn * wOut;
+      this.actWeights[a] = w;
+      sum += w;
+    }
+    if (sum > 0.0001) {
+      for (let a = 0; a < 6; a++) this.actWeights[a] /= sum;
+    }
+  }
+
+  _stellaratorPoint(u, v, minorScale, out) {
+    const R0 = 0.68;
+    const r0 = 0.20 * minorScale;
+    const twist = 1.5 * u;
+    const ex = r0 * 1.28 * Math.cos(v);
+    const ey = r0 * 0.72 * Math.sin(v);
+    const rx = ex * Math.cos(twist) - ey * Math.sin(twist);
+    const ry = ex * Math.sin(twist) + ey * Math.cos(twist);
+
+    const rad = R0 + rx;
+    out[0] = rad * Math.cos(u);
+    out[1] = ry + 0.11 * Math.sin(3.0 * u);
+    out[2] = rad * Math.sin(u);
+  }
+
+  update(storyTime, realTime, dt, score, cursorX, cursorY, pointerDown) {
+    const clampedDt = Math.min(0.05, Math.max(0.001, dt));
+    const jumped = Math.abs(storyTime - this.lastStoryTime) > 0.65;
+    this.lastStoryTime = storyTime;
+
+    this._computeActWeights(storyTime);
+    const actIdx = this.getActIndex(storyTime);
+    const envL = score.envLow;
+    const envM = score.envMid;
+    const envH = score.envHigh;
+
+    for (let l = 0; l < this.L; l++) {
+      this.lineData[l * 11 + 9] = 0.0;
+    }
+
+    const tmp = [0, 0, 0];
+    const tmpB = [0, 0, 0];
+
+    const rot3 = (storyTime - 28.0) * 0.24 + cursorX * 0.35;
+    const c3 = Math.cos(rot3), s3 = Math.sin(rot3);
+    const tiltY = cursorY * 0.24;
+
+    const rot4 = storyTime * 0.52 + cursorX * 0.42;
+    const c4 = Math.cos(rot4), s4 = Math.sin(rot4);
+
+    for (let i = 0; i < this.N; i++) {
+      const sa = this.seedA[i];
+      const sb = this.seedB[i];
+      const sc = this.seedC[i];
+
+      let tx = 0, ty = 0, tz = 0;
+      let tr = 1, tg = 0.8, tb = 0.5, ta = 0.85, tSize = 0.022;
+      let spring = 4.6;
+      let snapImmediate = false;
+
+      if (storyTime < 14.0) {
+        const bx = this.cavePos[i * 3 + 0];
+        const by = this.cavePos[i * 3 + 1];
+        const bz = this.cavePos[i * 3 + 2];
+        if (i < 4100) {
+          const breathe = 1.0 + 0.015 * Math.sin(realTime * 2.1 + sa * 12.0) + envL * 0.022;
+          tx = bx * breathe;
+          ty = by * breathe;
+          tz = bz + 0.025 * Math.sin(realTime * 1.4 + sb * 9.0);
+          tr = 0.96; tg = 0.46 + 0.34 * sa; tb = 0.16 + 0.14 * sb;
+          ta = 0.58 + 0.28 * envL;
+          tSize = 0.028 + 0.022 * sc;
+          spring = 6.0;
+        } else {
+          const rise = ((realTime * (0.09 + 0.08 * sa) + sb) % 1.0) * 1.9 - 0.95;
+          tx = bx + 0.12 * Math.sin(realTime * 0.9 + sc * 10.0);
+          ty = rise;
+          tz = bz;
+          tr = 1.0; tg = 0.62 + 0.25 * sb; tb = 0.24;
+          ta = (1.0 - Math.abs(rise) / 0.98) * 0.72;
+          tSize = 0.036 + 0.028 * sa;
+          spring = 3.2;
+          if (Math.abs(this.py[i] - ty) > 1.1) snapImmediate = true;
+        }
+
+      } else if (storyTime < 28.0) {
+        const cycle = (sb + (storyTime - 14.0) * (0.24 + 0.18 * sa)) % 1.0;
+        const passes = (i % 12) === 0;
+        if (passes) {
+          const y = 1.15 - cycle * 2.30;
+          const w = 0.022 + 0.95 * y * y * (y > 0 ? 1.0 : 0.22);
+          tx = (sa - 0.5) * 2.0 * w;
+          ty = y;
+          tz = (sc - 0.5) * 0.20;
+          tr = 1.00; tg = 0.82; tb = 0.38;
+          ta = 0.92;
+          tSize = 0.038 + 0.018 * envH;
+        } else {
+          if (cycle < 0.72) {
+            const u = cycle / 0.72;
+            const y = 1.18 * (1.0 - u) + 0.03;
+            const funnel = 0.048 + 1.48 * y * y;
+            const swirl = u * 5.5 + sa * 6.283;
+            tx = Math.cos(swirl) * funnel * (0.35 + 0.65 * sc);
+            ty = y;
+            tz = Math.sin(swirl) * funnel * 0.42;
+            tr = 0.72 + 0.25 * sa; tg = 0.84 + 0.14 * sb; tb = 1.00;
+            ta = 0.68;
+          } else {
+            const u = (cycle - 0.72) / 0.28;
+            const side = (i % 2 === 0) ? 1 : -1;
+            tx = side * (0.05 + u * (0.78 + 0.55 * sa));
+            ty = 0.03 - u * u * 0.52 + (sc - 0.5) * 0.16;
+            tz = (sb - 0.5) * 0.65;
+            tr = 0.45; tg = 0.58; tb = 0.82;
+            ta = (1.0 - u) * 0.55;
+          }
+          tSize = 0.028 + 0.018 * sa;
+        }
+        spring = 7.5;
+        if (Math.abs(this.py[i] - ty) > 1.05) snapImmediate = true;
+
+      } else if (storyTime < 43.0) {
+        const cIdx = this.clusterIdx[i];
+        const cl = this.clusters[cIdx];
+        const ox = cl.x + this.clusterOff[i * 3 + 0];
+        const oy = cl.y + this.clusterOff[i * 3 + 1];
+        const oz = cl.z + this.clusterOff[i * 3 + 2];
+
+        tx = ox * c3 - oz * s3;
+        const rz = ox * s3 + oz * c3;
+        ty = oy + rz * tiltY * 0.35;
+        tz = rz;
+
+        if (cl.domain === 0) { tr = 1.00; tg = 0.78; tb = 0.38; }
+        else if (cl.domain === 1) { tr = 0.28; tg = 0.95; tb = 0.72; }
+        else { tr = 0.42; tg = 0.80; tb = 1.00; }
+
+        const snapT = Math.min(1.0, Math.max(0.0, (storyTime - 28.15) / 1.4));
+        spring = 1.2 + 5.8 * snapT;
+        ta = 0.68 + 0.28 * envH;
+        tSize = 0.030 + 0.022 * sc + 0.014 * envH;
+
+      } else if (storyTime < 60.0) {
+        if (storyTime < 48.8) {
+          const ox = this.proteinPos[i * 3 + 0];
+          const oy = this.proteinPos[i * 3 + 1];
+          const oz = this.proteinPos[i * 3 + 2];
+          tx = ox * c4 - oz * s4;
+          tz = ox * s4 + oz * c4;
+          ty = oy + 0.025 * Math.sin(realTime * 2.5 + sa * 8.0);
+          tr = this.proteinCol[i * 3 + 0];
+          tg = this.proteinCol[i * 3 + 1];
+          tb = this.proteinCol[i * 3 + 2];
+          ta = i < 420 ? 0.95 : 0.72;
+          tSize = i < 420 ? (0.044 + 0.020 * envM) : 0.030;
+          spring = 6.8;
+
+        } else if (storyTime < 54.5) {
+          const u = (sa * Math.PI * 2 + storyTime * 2.35) % (Math.PI * 2);
+          const v = (5.0 / 3.0) * u + sb * Math.PI * 2;
+          const radial = 0.25 + 0.70 * Math.pow(sc, 0.6);
+          this._stellaratorPoint(u, v, radial, tmp);
+
+          const tilt = 0.56 + cursorY * 0.25;
+          const ct = Math.cos(tilt), st = Math.sin(tilt);
+          const rx = tmp[0] * c4 - tmp[2] * s4;
+          const rz = tmp[0] * s4 + tmp[2] * c4;
+          tx = rx;
+          ty = tmp[1] * ct - rz * st;
+          tz = tmp[1] * st + rz * ct;
+
+          const coreHot = 1.0 - radial;
+          tr = 0.68 + 0.32 * coreHot;
+          tg = 0.30 + 0.62 * coreHot;
+          tb = 0.98 - 0.30 * coreHot;
+          ta = 0.74 + 0.22 * envM;
+          tSize = 0.030 + 0.022 * coreHot;
+          spring = 8.2;
+
+        } else {
+          const ox = this.earthPos[i * 3 + 0];
+          const oy = this.earthPos[i * 3 + 1];
+          const oz = this.earthPos[i * 3 + 2];
+          const rx = ox * c4 - oz * s4;
+          const rz = ox * s4 + oz * c4;
+          const ax = 0.40;
+          const cax = Math.cos(ax), sax = Math.sin(ax);
+          tx = rx * cax - oy * sax;
+          ty = rx * sax + oy * cax;
+          tz = rz;
+
+          tr = this.earthCol[i * 3 + 0];
+          tg = this.earthCol[i * 3 + 1];
+          tb = this.earthCol[i * 3 + 2];
+          ta = i >= 4800 ? 0.90 : 0.78;
+          tSize = i >= 4800 ? 0.036 : 0.029;
+          spring = 6.5;
+        }
+
+      } else if (storyTime < 73.0) {
+        const beat = 1.0 + envL * 0.14;
+        if (i < 4400) {
+          const h = Math.pow(sa, 0.78);
+          const prof = Math.sin(Math.pow(h, 0.68) * Math.PI) * (1.0 - 0.35 * h);
+          const rad = 0.115 * prof * Math.sqrt(sb) * beat;
+          const ang = sc * Math.PI * 2 + realTime * 1.4;
+          const sway = 0.020 * h * h * Math.sin(realTime * 3.8 - h * 5.0) + cursorX * 0.06 * h;
+
+          tx = Math.cos(ang) * rad + sway;
+          ty = -0.05 + h * 0.48 * beat;
+          tz = Math.sin(ang) * rad;
+
+          const mMid = Math.max(0, Math.min(1, (h - 0.06) / 0.28));
+          const mTip = Math.max(0, Math.min(1, (h - 0.48) / 0.40));
+          tr = (0.32 + 0.68 * mMid) * (1.0 - mTip) + 0.98 * mTip;
+          tg = (0.64 + 0.26 * mMid) * (1.0 - mTip) + 0.48 * mTip;
+          tb = (1.00 - 0.32 * mMid) * (1.0 - mTip) + 0.16 * mTip;
+          ta = (1.0 - h * 0.45) * 0.76;
+          tSize = 0.028 + 0.026 * (1.0 - h);
+          spring = 5.4;
+        } else {
+          const outer = (i % 2) === 0;
+          const ringR = (outer ? 0.86 : 0.56) * (1.0 + envL * 0.04);
+          const ang = sa * Math.PI * 2 + realTime * (outer ? -0.14 : 0.20);
+          tx = Math.cos(ang) * ringR;
+          tz = Math.sin(ang) * ringR;
+          ty = -0.16 + 0.05 * Math.sin(ang * 2.0 + realTime * 0.6);
+          tr = 0.85; tg = 0.88; tb = 0.96;
+          ta = 0.34 + 0.24 * envM;
+          tSize = 0.024;
+          spring = 4.2;
+        }
+
+      } else {
+        const dawnT = Math.min(1.0, (storyTime - 73.0) / 3.2);
+        let dx = this.dawnPos[i * 3 + 0];
+        let dy = this.dawnPos[i * 3 + 1];
+        let dz = this.dawnPos[i * 3 + 2];
+
+        if (i >= 2300 && i < 4600) {
+          const lx = dx - 0.62;
+          const lz = dz;
+          const ca = Math.cos(realTime * 0.32), ssa = Math.sin(realTime * 0.32);
+          dx = 0.62 + lx * ca - lz * ssa;
+          dz = lx * ssa + lz * ca;
+        } else if (i < 2300) {
+          dy += 0.014 * Math.sin(realTime * 1.6 + sa * 8.0);
+        } else if (sa > 0.45) {
+          dy += ((storyTime - 73.0) * 0.032 * sb) % 0.42;
+        }
+
+        tx = dx;
+        ty = dy - (1.0 - dawnT) * 0.16;
+        tz = dz;
+        tr = this.dawnCol[i * 3 + 0];
+        tg = this.dawnCol[i * 3 + 1];
+        tb = this.dawnCol[i * 3 + 2];
+        ta = (0.72 + 0.25 * envM) * Math.min(1.0, (storyTime - 72.8) / 1.2);
+        tSize = 0.028 + 0.022 * sc;
+        spring = 4.5;
+      }
+
+      if (jumped || snapImmediate) {
+        const mix = snapImmediate ? 1.0 : 0.72;
+        this.px[i] += (tx - this.px[i]) * mix;
+        this.py[i] += (ty - this.py[i]) * mix;
+        this.pz[i] += (tz - this.pz[i]) * mix;
+        this.vx[i] *= 0.15;
+        this.vy[i] *= 0.15;
+        this.vz[i] *= 0.15;
+      } else {
+        let ax = (tx - this.px[i]) * spring;
+        let ay = (ty - this.py[i]) * spring;
+        let az = (tz - this.pz[i]) * spring;
+
+        const cdx = this.px[i] - cursorX;
+        const cdy = this.py[i] - cursorY;
+        const cd2 = cdx * cdx + cdy * cdy + 0.035;
+        if (cd2 < 0.38) {
+          const force = (pointerDown ? -1.45 : 0.65) / (cd2 * 8.0 + 0.35);
+          ax += cdx * force - cdy * 0.55;
+          ay += cdy * force + cdx * 0.55;
+        }
+
+        const damp = Math.exp(-3.6 * clampedDt);
+        this.vx[i] = (this.vx[i] + ax * clampedDt) * damp;
+        this.vy[i] = (this.vy[i] + ay * clampedDt) * damp;
+        this.vz[i] = (this.vz[i] + az * clampedDt) * damp;
+
+        this.px[i] += this.vx[i] * clampedDt;
+        this.py[i] += this.vy[i] * clampedDt;
+        this.pz[i] += this.vz[i] * clampedDt;
+      }
+
+      const base = i * 8;
+      this.particleData[base + 0] = this.px[i];
+      this.particleData[base + 1] = this.py[i];
+      this.particleData[base + 2] = this.pz[i];
+      this.particleData[base + 3] = tSize;
+      this.particleData[base + 4] = tr;
+      this.particleData[base + 5] = tg;
+      this.particleData[base + 6] = tb;
+      this.particleData[base + 7] = ta;
+    }
+
+    // Populate 3D Filaments (480 Instanced Segments)
+    let lineCursor = 0;
+    const pushLine = (ax, ay, az, bx, by, bz, r, g, b, a, w) => {
+      if (lineCursor >= this.L) return;
+      const o = lineCursor * 11;
+      this.lineData[o + 0] = ax;
+      this.lineData[o + 1] = ay;
+      this.lineData[o + 2] = az;
+      this.lineData[o + 3] = bx;
+      this.lineData[o + 4] = by;
+      this.lineData[o + 5] = bz;
+      this.lineData[o + 6] = r;
+      this.lineData[o + 7] = g;
+      this.lineData[o + 8] = b;
+      this.lineData[o + 9] = a;
+      this.lineData[o + 10] = w;
+      lineCursor++;
+    };
+
+    if (actIdx === 2) {
+      const appear = Math.min(1.0, Math.max(0.0, (storyTime - 28.8) / 2.0));
+      const numArcs = Math.min(155, this.clusterPairs.length);
+      for (let k = 0; k < numArcs; k++) {
+        const [ia, ib] = this.clusterPairs[k];
+        const ca0 = this.clusters[ia];
+        const cb0 = this.clusters[ib];
+
+        const ax = ca0.x * c3 - ca0.z * s3, az = ca0.x * s3 + ca0.z * c3;
+        const ay = ca0.y + az * tiltY * 0.35;
+        const bx = cb0.x * c3 - cb0.z * s3, bz = cb0.x * s3 + cb0.z * c3;
+        const by = cb0.y + bz * tiltY * 0.35;
+
+        const mx = (ax + bx) * 0.62, my = (ay + by) * 0.62 + 0.07, mz = (az + bz) * 0.62;
+        const wave = 0.5 + 0.5 * Math.sin(storyTime * 3.4 - k * 0.37);
+        const curNear = Math.exp(-Math.hypot(mx - cursorX, my - cursorY) * 2.8);
+        const alpha = appear * (0.06 + 0.36 * Math.pow(wave, 4.0) + 0.38 * curNear + 0.20 * envH);
+
+        const q1x = 0.5 * (ax + mx), q1y = 0.5 * (ay + my), q1z = 0.5 * (az + mz);
+        const q2x = 0.5 * (mx + bx), q2y = 0.5 * (my + by), q2z = 0.5 * (mz + bz);
+        const r = 0.55 + 0.45 * wave, g = 0.82, b = 1.00 - 0.35 * wave, w = 1.3 + 1.4 * wave;
+
+        pushLine(ax, ay, az, q1x, q1y, q1z, r, g, b, alpha, w);
+        pushLine(q1x, q1y, q1z, q2x, q2y, q2z, r, g, b, alpha, w);
+        pushLine(q2x, q2y, q2z, bx, by, bz, r, g, b, alpha, w);
+      }
+
+    } else if (actIdx === 3) {
+      if (storyTime < 48.8) {
+        for (let k = 0; k < this.backbonePts.length - 1; k++) {
+          const p0 = this.backbonePts[k];
+          const p1 = this.backbonePts[k + 1];
+          const ax = p0[0] * c4 - p0[2] * s4, az = p0[0] * s4 + p0[2] * c4;
+          const bx = p1[0] * c4 - p1[2] * s4, bz = p1[0] * s4 + p1[2] * c4;
+          pushLine(ax, p0[1], az, bx, p1[1], bz, 0.28, 0.96, 0.78, 0.48, 2.0);
+        }
+        for (let k = 0; k < this.backbonePts.length; k += 9) {
+          const p0 = this.backbonePts[k];
+          if (Math.hypot(p0[0] - 0.04, p0[1] + 0.02, p0[2] - 0.08) < 0.50) {
+            const ax = 0.04 * c4 - 0.08 * s4, az = 0.04 * s4 + 0.08 * c4;
+            const bx = p0[0] * c4 - p0[2] * s4, bz = p0[0] * s4 + p0[2] * c4;
+            pushLine(ax, -0.02, az, bx, p0[1], bz, 1.0, 0.82, 0.32, 0.55 + 0.25 * envM, 1.8);
+          }
+        }
+      } else if (storyTime < 54.5) {
+        const tilt = 0.56 + cursorY * 0.25;
+        const ct = Math.cos(tilt), st = Math.sin(tilt);
+        const numCoils = 24, segsPerCoil = 18;
+        for (let c = 0; c < numCoils; c++) {
+          const u = (c / numCoils) * Math.PI * 2;
+          for (let s = 0; s < segsPerCoil; s++) {
+            const v0 = (s / segsPerCoil) * Math.PI * 2;
+            const v1 = ((s + 1) / segsPerCoil) * Math.PI * 2;
+            this._stellaratorPoint(u, v0, 1.16, tmp);
+            this._stellaratorPoint(u, v1, 1.16, tmpB);
+
+            const rx0 = tmp[0] * c4 - tmp[2] * s4, rz0 = tmp[0] * s4 + tmp[2] * c4;
+            const rx1 = tmpB[0] * c4 - tmpB[2] * s4, rz1 = tmpB[0] * s4 + tmpB[2] * c4;
+
+            pushLine(
+              rx0, tmp[1] * ct - rz0 * st, tmp[1] * st + rz0 * ct,
+              rx1, tmpB[1] * ct - rz1 * st, tmpB[1] * st + rz1 * ct,
+              0.32, 0.84, 1.00, 0.52 + 0.22 * envH, 1.9
+            );
+          }
+        }
+      } else {
+        const ax = 0.40;
+        const cax = Math.cos(ax), sax = Math.sin(ax);
+        const numOrbits = 14, segs = 32;
+        for (let o = 0; o < numOrbits; o++) {
+          const inc = (o / numOrbits) * Math.PI - Math.PI * 0.5;
+          const rad = 0.82 + (o % 3) * 0.06;
+          for (let s = 0; s < segs; s++) {
+            const a0 = (s / segs) * Math.PI * 2 + storyTime * (o % 2 ? 0.35 : -0.28);
+            const a1 = a0 + (Math.PI * 2) / segs;
+
+            const x0 = Math.cos(a0) * rad, y0 = Math.sin(a0) * Math.sin(inc) * rad, z0 = Math.sin(a0) * Math.cos(inc) * rad;
+            const x1 = Math.cos(a1) * rad, y1 = Math.sin(a1) * Math.sin(inc) * rad, z1 = Math.sin(a1) * Math.cos(inc) * rad;
+
+            const rx0 = x0 * c4 - z0 * s4, rz0 = x0 * s4 + z0 * c4;
+            const rx1 = x1 * c4 - z1 * s4, rz1 = x1 * s4 + z1 * c4;
+            const gold = (o % 3) === 0;
+
+            pushLine(
+              rx0 * cax - y0 * sax, rx0 * sax + y0 * cax, rz0,
+              rx1 * cax - y1 * sax, rx1 * sax + y1 * cax, rz1,
+              gold ? 1.0 : 0.36, gold ? 0.80 : 0.86, gold ? 0.38 : 1.0,
+              0.34 + 0.20 * envM, 1.6
+            );
+          }
+        }
+      }
+
+    } else if (actIdx === 5) {
+      const dawnAlpha = Math.min(1.0, (storyTime - 73.2) / 2.2);
+      if (dawnAlpha > 0.01) {
+        for (let s = 0; s < this.handConstellationSegs.length; s++) {
+          const [p0, p1] = this.handConstellationSegs[s];
+          pushLine(
+            p0[0] * 1.12 - 0.62, p0[1] * 1.12 + 0.17, 0,
+            p1[0] * 1.12 - 0.62, p1[1] * 1.12 + 0.17, 0,
+            1.00, 0.76, 0.38, 0.42 * dawnAlpha, 1.8
+          );
+        }
+
+        const ca = Math.cos(realTime * 0.32), ssa = Math.sin(realTime * 0.32);
+        for (let e = 0; e < this.crystalEdges.length; e++) {
+          const [ia, ib] = this.crystalEdges[e];
+          const va = this.crystalVerts[ia];
+          const vb = this.crystalVerts[ib];
+          const ax = 0.62 + va[0] * ca - va[2] * ssa, az = va[0] * ssa + va[2] * ca;
+          const bx = 0.62 + vb[0] * ca - vb[2] * ssa, bz = vb[0] * ssa + vb[2] * ca;
+          pushLine(ax, 0.16 + va[1], az, bx, 0.16 + vb[1], bz, 0.45, 0.88, 1.00, 0.46 * dawnAlpha, 1.7);
+        }
+
+        const bridges = 5, segs = 12;
+        for (let b = 0; b < bridges; b++) {
+          const yOff = (b - 2) * 0.068;
+          for (let s = 0; s < segs; s++) {
+            const u0 = s / segs, u1 = (s + 1) / segs;
+            const x0 = -0.46 + u0 * 0.92, x1 = -0.46 + u1 * 0.92;
+            const y0 = 0.16 + yOff + Math.sin(u0 * Math.PI) * (0.13 + b * 0.018);
+            const y1 = 0.16 + yOff + Math.sin(u1 * Math.PI) * (0.13 + b * 0.018);
+            pushLine(
+              x0, y0, 0, x1, y1, 0,
+              1.0 - 0.45 * u0, 0.80 + 0.10 * u0, 0.42 + 0.55 * u0,
+              (0.24 + 0.18 * envM) * dawnAlpha, 1.5
+            );
+          }
+        }
+      }
+    }
+  }
+}
+
+
+// Main WebGL2 Cinema Engine, Transport & Interactive Controller for "THE HANDPRINT"
+
+(function () {
+  const canvas = document.getElementById('glCanvas');
+  const gl = canvas.getContext('webgl2', {
+    alpha: false,
+    antialias: true,
+    depth: false,
+    preserveDrawingBuffer: true
+  });
+
+  if (!gl) {
+    document.body.innerHTML =
+      '<div style="color:#f5f2eb;padding:40px;font-family:sans-serif;font-size:15px;">WebGL2 is required to view THE HANDPRINT.</div>';
+    return;
+  }
+
+  function compileShader(type, src) {
+    const sh = gl.createShader(type);
+    gl.shaderSource(sh, src);
+    gl.compileShader(sh);
+    if (!gl.getShaderParameter(sh, gl.COMPILE_STATUS)) {
+      throw new Error(gl.getShaderInfoLog(sh) || 'Shader compile error');
+    }
+    return sh;
+  }
+
+  function createProgram(vsSrc, fsSrc) {
+    const prog = gl.createProgram();
+    gl.attachShader(prog, compileShader(gl.VERTEX_SHADER, vsSrc));
+    gl.attachShader(prog, compileShader(gl.FRAGMENT_SHADER, fsSrc));
+    gl.linkProgram(prog);
+    if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) {
+      throw new Error(gl.getProgramInfoLog(prog) || 'Program link error');
+    }
+    return prog;
+  }
+
+  const backdropProg = createProgram(STORY_SHADERS.fullscreenVert, STORY_SHADERS.backdropFrag);
+  const lineProg = createProgram(STORY_SHADERS.lineVert, STORY_SHADERS.lineFrag);
+  const particleProg = createProgram(STORY_SHADERS.particleVert, STORY_SHADERS.particleFrag);
+
+  const uBackdrop = {
+    uRes: gl.getUniformLocation(backdropProg, 'uRes'),
+    uTime: gl.getUniformLocation(backdropProg, 'uTime'),
+    uStoryTime: gl.getUniformLocation(backdropProg, 'uStoryTime'),
+    uActWeights: gl.getUniformLocation(backdropProg, 'uActWeights'),
+    uAudio: gl.getUniformLocation(backdropProg, 'uAudio'),
+    uCursor: gl.getUniformLocation(backdropProg, 'uCursor'),
+    uIntroMix: gl.getUniformLocation(backdropProg, 'uIntroMix')
+  };
+
+  const uLine = {
+    uProjView: gl.getUniformLocation(lineProg, 'uProjView'),
+    uRes: gl.getUniformLocation(lineProg, 'uRes'),
+    uTime: gl.getUniformLocation(lineProg, 'uTime')
+  };
+
+  const uParticle = {
+    uProjView: gl.getUniformLocation(particleProg, 'uProjView'),
+    uRes: gl.getUniformLocation(particleProg, 'uRes')
+  };
+
+  const score = new StoryScoreEngine();
+  const world = new StoryWorld();
+
+  // 1. Empty VAO for fullscreen triangle pass (always bind non-null VAO in WebGL2!)
+  const emptyVao = gl.createVertexArray();
+
+  // 2. Instanced Line VAO (quad: [0..1, -1..1], per-instance 11 floats)
+  const lineVao = gl.createVertexArray();
+  gl.bindVertexArray(lineVao);
+
+  const lineQuadBuf = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, lineQuadBuf);
+  gl.bufferData(
+    gl.ARRAY_BUFFER,
+    new Float32Array([
+      0, -1,  1, -1,  0,  1,
+      0,  1,  1, -1,  1,  1
+    ]),
+    gl.STATIC_DRAW
+  );
+  gl.enableVertexAttribArray(0);
+  gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 8, 0);
+
+  const lineInstBuf = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, lineInstBuf);
+  gl.bufferData(gl.ARRAY_BUFFER, world.lineData.byteLength, gl.DYNAMIC_DRAW);
+
+  const lineStride = 11 * 4;
+  // loc 1: iPosA (vec3)
+  gl.enableVertexAttribArray(1);
+  gl.vertexAttribPointer(1, 3, gl.FLOAT, false, lineStride, 0);
+  gl.vertexAttribDivisor(1, 1);
+  // loc 2: iPosB (vec3)
+  gl.enableVertexAttribArray(2);
+  gl.vertexAttribPointer(2, 3, gl.FLOAT, false, lineStride, 12);
+  gl.vertexAttribDivisor(2, 1);
+  // loc 3: iColor (vec4)
+  gl.enableVertexAttribArray(3);
+  gl.vertexAttribPointer(3, 4, gl.FLOAT, false, lineStride, 24);
+  gl.vertexAttribDivisor(3, 1);
+  // loc 4: iWidth (float)
+  gl.enableVertexAttribArray(4);
+  gl.vertexAttribPointer(4, 1, gl.FLOAT, false, lineStride, 40);
+  gl.vertexAttribDivisor(4, 1);
+
+  // 3. Instanced Particle VAO (quad: [-1..1, -1..1], per-instance 8 floats)
+  const particleVao = gl.createVertexArray();
+  gl.bindVertexArray(particleVao);
+
+  const partQuadBuf = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, partQuadBuf);
+  gl.bufferData(
+    gl.ARRAY_BUFFER,
+    new Float32Array([
+      -1, -1,   1, -1,  -1,  1,
+      -1,  1,   1, -1,   1,  1
+    ]),
+    gl.STATIC_DRAW
+  );
+  gl.enableVertexAttribArray(0);
+  gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 8, 0);
+
+  const partInstBuf = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, partInstBuf);
+  gl.bufferData(gl.ARRAY_BUFFER, world.particleData.byteLength, gl.DYNAMIC_DRAW);
+
+  const partStride = 8 * 4;
+  // loc 1: iPos (vec3)
+  gl.enableVertexAttribArray(1);
+  gl.vertexAttribPointer(1, 3, gl.FLOAT, false, partStride, 0);
+  gl.vertexAttribDivisor(1, 1);
+  // loc 2: iSize (float)
+  gl.enableVertexAttribArray(2);
+  gl.vertexAttribPointer(2, 1, gl.FLOAT, false, partStride, 12);
+  gl.vertexAttribDivisor(2, 1);
+  // loc 3: iColor (vec4)
+  gl.enableVertexAttribArray(3);
+  gl.vertexAttribPointer(3, 4, gl.FLOAT, false, partStride, 16);
+  gl.vertexAttribDivisor(3, 1);
+
+  gl.bindVertexArray(null);
+
+  // 50mm Cinema Perspective Projection Matrix (Z_cam = 2.8, focal = 2.8 -> z=0 matches backdropFrag p!)
+  const projView = new Float32Array(16);
+  function updateCameraMatrix(aspect) {
+    const zCam = 2.8;
+    const f = 2.8;
+    const near = 0.15, far = 20.0;
+    const nf = 1.0 / (near - far);
+
+    projView.fill(0);
+    projView[0] = f / Math.max(aspect, 0.1);
+    projView[5] = f;
+    projView[10] = (far + near) * nf;
+    projView[11] = -1.0;
+    // View translation (0, 0, -zCam) folded directly into column 3:
+    projView[14] = (2.0 * far * near * nf) - zCam * ((far + near) * nf);
+    projView[15] = zCam;
+  }
+
+  function resize() {
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const w = Math.max(1, Math.floor((canvas.clientWidth || 1280) * dpr));
+    const h = Math.max(1, Math.floor((canvas.clientHeight || 720) * dpr));
+    if (canvas.width !== w || canvas.height !== h) {
+      canvas.width = w;
+      canvas.height = h;
+    }
+    updateCameraMatrix(w / h);
+  }
+  window.addEventListener('resize', resize);
+  resize();
+
+  // DOM References
+  const introVeil = document.getElementById('introVeil');
+  const btnStartSound = document.getElementById('btnStartSound');
+  const btnStartMuted = document.getElementById('btnStartMuted');
+  const actNumEl = document.getElementById('actNum');
+  const actNameEl = document.getElementById('actName');
+  const btnRec = document.getElementById('btnRec');
+  const recText = document.getElementById('recText');
+  const btnMute = document.getElementById('btnMute');
+  const muteText = document.getElementById('muteText');
+  const btnFull = document.getElementById('btnFull');
+  const subPrimary = document.getElementById('subPrimary');
+  const subSecondary = document.getElementById('subSecondary');
+  const epilogueBar = document.getElementById('epilogueBar');
+  const btnReplay = document.getElementById('btnReplay');
+  const btnPlayPause = document.getElementById('btnPlayPause');
+  const playIcon = document.getElementById('playIcon');
+  const timelineWrap = document.getElementById('timelineWrap');
+  const timelineTrack = document.getElementById('timelineTrack');
+  const timelineFill = document.getElementById('timelineFill');
+  const timeReadout = document.getElementById('timeReadout');
+  const actTickBtns = Array.from(document.querySelectorAll('.act-tick-btn'));
+
+  // Playback State
+  let hasStarted = false;
+  let isPlaying = false;
+  let storyTime = 0.0;
+  let introMix = 1.0;
+
+  // Pointer State (aspect-corrected NDC coords matching backdropFrag p)
+  let cursorX = 0.0, cursorY = 0.0;
+  let targetCursorX = 0.0, targetCursorY = 0.0;
+  let pointerDown = false;
+
+  function formatTime(sec) {
+    const s = Math.max(0, Math.min(STORY_DURATION, Math.floor(sec)));
+    const m = Math.floor(s / 60);
+    const r = s % 60;
+    return `${m}:${r < 10 ? '0' : ''}${r}`;
+  }
+
+  function startExperience(withSound) {
+    hasStarted = true;
+    isPlaying = true;
+    storyTime = 0.0;
+    score.unlock(withSound);
+    score.seek(0.0);
+    introVeil.classList.add('hidden');
+    epilogueBar.classList.remove('visible');
+    muteText.textContent = score.muted ? 'MUTED' : 'SOUND ON';
+    playIcon.textContent = '❚❚';
+  }
+
+  btnStartSound.addEventListener('click', () => startExperience(true));
+  btnStartMuted.addEventListener('click', () => startExperience(false));
+
+  function seekTo(newTime) {
+    storyTime = Math.max(0.0, Math.min(STORY_DURATION, newTime));
+    score.seek(storyTime);
+    if (storyTime < STORY_DURATION - 0.15) {
+      epilogueBar.classList.remove('visible');
+    }
+    if (!hasStarted) {
+      hasStarted = true;
+      isPlaying = true;
+      score.unlock(false);
+      introVeil.classList.add('hidden');
+      muteText.textContent = 'MUTED';
+    }
+  }
+
+  btnPlayPause.addEventListener('click', () => {
+    if (!hasStarted) {
+      startExperience(true);
+      return;
+    }
+    if (storyTime >= STORY_DURATION - 0.05) {
+      seekTo(0.0);
+      isPlaying = true;
+    } else {
+      isPlaying = !isPlaying;
+    }
+    playIcon.textContent = isPlaying ? '❚❚' : '▶';
+  });
+
+  btnReplay.addEventListener('click', () => {
+    epilogueBar.classList.remove('visible');
+    seekTo(0.0);
+    isPlaying = true;
+    playIcon.textContent = '❚❚';
+  });
+
+  btnMute.addEventListener('click', () => {
+    const muted = score.toggleMute();
+    muteText.textContent = muted ? 'MUTED' : 'SOUND ON';
+  });
+
+  btnFull.addEventListener('click', () => {
+    if (!document.fullscreenElement && document.documentElement.requestFullscreen) {
+      document.documentElement.requestFullscreen().catch(() => {});
+    } else if (document.exitFullscreen) {
+      document.exitFullscreen().catch(() => {});
+    }
+  });
+
+  // Timeline Scrubbing + Chapter Jump Buttons
+  let scrubbing = false;
+  function scrubFromEvent(e) {
+    const rect = timelineTrack.getBoundingClientRect();
+    if (rect.width <= 0) return;
+    const u = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+    seekTo(u * STORY_DURATION);
+  }
+
+  timelineTrack.addEventListener('pointerdown', (e) => {
+    scrubbing = true;
+    scrubFromEvent(e);
+  });
+  window.addEventListener('pointermove', (e) => {
+    if (scrubbing) scrubFromEvent(e);
+  });
+  window.addEventListener('pointerup', () => {
+    scrubbing = false;
+  });
+
+  actTickBtns.forEach((btn) => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const t = Number(btn.dataset.jump || 0);
+      if (!hasStarted) {
+        startExperience(true);
+      }
+      seekTo(t);
+      isPlaying = true;
+      playIcon.textContent = '❚❚';
+    });
+  });
+
+  // Interactive Canvas Touch & Pointer Physics
+  function updateCursorFromEvent(e) {
+    const rect = canvas.getBoundingClientRect();
+    if (rect.width <= 0 || rect.height <= 0) return;
+    const nx = ((e.clientX - rect.left) / rect.width) * 2.0 - 1.0;
+    const ny = 1.0 - ((e.clientY - rect.top) / rect.height) * 2.0;
+    const aspect = rect.width / Math.max(1, rect.height);
+    targetCursorX = nx * aspect;
+    targetCursorY = ny;
+  }
+
+  canvas.addEventListener('pointerdown', (e) => {
+    pointerDown = true;
+    updateCursorFromEvent(e);
+    if (hasStarted) {
+      score.touchSpark(Math.max(-1, Math.min(1, targetCursorX / 1.5)), world.getActIndex(storyTime));
+    }
+  });
+  canvas.addEventListener('pointermove', (e) => {
+    updateCursorFromEvent(e);
+  });
+  window.addEventListener('pointerup', () => {
+    pointerDown = false;
+  });
+
+  // Keyboard Shortcuts (Space: Play/Pause, M: Mute, F: Fullscreen, 1..6: Jump to Act)
+  window.addEventListener('keydown', (e) => {
+    if (e.code === 'Space') {
+      e.preventDefault();
+      btnPlayPause.click();
+    } else if (e.key === 'm' || e.key === 'M') {
+      btnMute.click();
+    } else if (e.key === 'f' || e.key === 'F') {
+      btnFull.click();
+    } else if (e.key >= '1' && e.key <= '6') {
+      const idx = parseInt(e.key, 10) - 1;
+      if (actTickBtns[idx]) actTickBtns[idx].click();
+    } else if (e.key === 'ArrowRight') {
+      seekTo(storyTime + 5.0);
+    } else if (e.key === 'ArrowLeft') {
+      seekTo(storyTime - 5.0);
+    }
+  });
+
+  // Built-in 60fps Video + Stereo Score Recorder (.webm)
+  let mediaRecorder = null;
+  let recChunks = [];
+  btnRec.addEventListener('click', () => {
+    if (mediaRecorder && mediaRecorder.state === 'recording') {
+      mediaRecorder.stop();
+      return;
+    }
+    if (!canvas.captureStream || typeof MediaRecorder === 'undefined') return;
+    if (!hasStarted) startExperience(true);
+    else if (score.muted) btnMute.click();
+
+    const vStream = canvas.captureStream(60);
+    const tracks = [...vStream.getVideoTracks()];
+    if (score.streamDest && score.streamDest.stream) {
+      tracks.push(...score.streamDest.stream.getAudioTracks());
+    }
+    const mixed = new MediaStream(tracks);
+    recChunks = [];
+    const mime = MediaRecorder.isTypeSupported('video/webm;codecs=vp9,opus')
+      ? 'video/webm;codecs=vp9,opus'
+      : 'video/webm';
+    mediaRecorder = new MediaRecorder(mixed, { mimeType: mime, videoBitsPerSecond: 12000000 });
+    mediaRecorder.ondataavailable = (ev) => {
+      if (ev.data && ev.data.size > 0) recChunks.push(ev.data);
+    };
+    mediaRecorder.onstop = () => {
+      btnRec.classList.remove('recording');
+      recText.textContent = '● REC';
+      const blob = new Blob(recChunks, { type: mime });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'the-handprint-gemini-4-carbon.webm';
+      a.click();
+    };
+    mediaRecorder.start();
+    btnRec.classList.add('recording');
+    recText.textContent = '■ STOP';
+  });
+
+  // UI Sync Helpers
+  let lastSubPrimary = '';
+  let lastSubSecondary = '';
+  let lastActIdx = -1;
+
+  function syncHud() {
+    const actIdx = world.getActIndex(storyTime);
+    if (actIdx !== lastActIdx) {
+      lastActIdx = actIdx;
+      const act = STORY_ACTS[actIdx];
+      actNumEl.textContent = act.num;
+      actNameEl.textContent = act.name;
+      actTickBtns.forEach((b, i) => b.classList.toggle('active', i === actIdx));
+    }
+
+    const pct = Math.max(0, Math.min(100, (storyTime / STORY_DURATION) * 100));
+    timelineFill.style.width = `${pct.toFixed(2)}%`;
+    timeReadout.textContent = `${formatTime(storyTime)} / 1:26`;
+
+    const sub = hasStarted ? world.getSubtitle(storyTime) : null;
+    if (sub) {
+      if (sub.primary !== lastSubPrimary) {
+        lastSubPrimary = sub.primary;
+        subPrimary.textContent = sub.primary;
+      }
+      if (sub.secondary !== lastSubSecondary) {
+        lastSubSecondary = sub.secondary;
+        subSecondary.textContent = sub.secondary;
+      }
+      subPrimary.classList.toggle('visible', sub.alpha > 0.08);
+      subSecondary.classList.toggle('visible', Boolean(sub.secondary) && sub.alpha > 0.08);
+    } else {
+      subPrimary.classList.remove('visible');
+      subSecondary.classList.remove('visible');
+    }
+  }
+
+  // Main 60fps Cinema Loop
+  let prevMs = performance.now();
+
+  function frame(nowMs) {
+    const dt = Math.min(0.05, Math.max(0.001, (nowMs - prevMs) * 0.001));
+    prevMs = nowMs;
+    const realTime = nowMs * 0.001;
+
+    resize();
+
+    if (hasStarted && isPlaying) {
+      storyTime += dt;
+      if (storyTime >= STORY_DURATION) {
+        storyTime = STORY_DURATION;
+        isPlaying = false;
+        playIcon.textContent = '▶';
+        epilogueBar.classList.add('visible');
+      }
+    }
+
+    introMix += ((hasStarted ? 0.0 : 1.0) - introMix) * Math.min(1.0, dt * 3.5);
+    cursorX += (targetCursorX - cursorX) * Math.min(1.0, dt * 8.0);
+    cursorY += (targetCursorY - cursorY) * Math.min(1.0, dt * 8.0);
+
+    score.update(storyTime, dt, hasStarted && isPlaying);
+    world.update(storyTime, realTime, dt, score, cursorX, cursorY, pointerDown);
+    syncHud();
+
+    // Render Pass 1: Atmospheric Multi-Act Shader Backdrop
+    gl.viewport(0, 0, canvas.width, canvas.height);
+    gl.disable(gl.BLEND);
+    gl.useProgram(backdropProg);
+    gl.bindVertexArray(emptyVao);
+    gl.uniform2f(uBackdrop.uRes, canvas.width, canvas.height);
+    gl.uniform1f(uBackdrop.uTime, realTime);
+    gl.uniform1f(uBackdrop.uStoryTime, storyTime);
+    gl.uniform1fv(uBackdrop.uActWeights, world.actWeights);
+    gl.uniform3f(uBackdrop.uAudio, score.envLow, score.envMid, score.envHigh);
+    gl.uniform2f(uBackdrop.uCursor, cursorX, cursorY);
+    gl.uniform1f(uBackdrop.uIntroMix, introMix);
+    gl.drawArrays(gl.TRIANGLES, 0, 3);
+
+    // Enable Additive Cinema Glow Blending for 3D Filaments & Particles
+    gl.enable(gl.BLEND);
+    gl.blendFunc(gl.ONE, gl.ONE);
+
+    // Render Pass 2: Instanced 3D Attention & Structural Filaments
+    gl.useProgram(lineProg);
+    gl.bindVertexArray(lineVao);
+    gl.bindBuffer(gl.ARRAY_BUFFER, lineInstBuf);
+    gl.bufferSubData(gl.ARRAY_BUFFER, 0, world.lineData);
+    gl.uniformMatrix4fv(uLine.uProjView, false, projView);
+    gl.uniform2f(uLine.uRes, canvas.width, canvas.height);
+    gl.uniform1f(uLine.uTime, realTime);
+    gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, world.L);
+
+    // Render Pass 3: Instanced 3D Luminous Embers, Atoms & Stars
+    gl.useProgram(particleProg);
+    gl.bindVertexArray(particleVao);
+    gl.bindBuffer(gl.ARRAY_BUFFER, partInstBuf);
+    gl.bufferSubData(gl.ARRAY_BUFFER, 0, world.particleData);
+    gl.uniformMatrix4fv(uParticle.uProjView, false, projView);
+    gl.uniform2f(uParticle.uRes, canvas.width, canvas.height);
+    gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, world.N);
+
+    requestAnimationFrame(frame);
+  }
+
+  requestAnimationFrame(frame);
+})();
+
+  </script>
+</body>
+</html>

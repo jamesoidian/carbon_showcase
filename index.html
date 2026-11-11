@@ -1,0 +1,4695 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>CARBON (Z = 6) — Gemini 4 Carbon Interactive Showcase</title>
+  <style>
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #050608;
+  color: #f2f4f8;
+  font-family: -apple-system, BlinkMacSystemFont, "Inter", "SF Pro Display", "Segoe UI", Roboto, sans-serif;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
+}
+
+#app {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 460px;
+  overflow: hidden;
+  background: radial-gradient(circle at 50% 45%, #0d1017 0%, #050608 75%);
+}
+
+#glCanvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  cursor: grab;
+}
+
+#glCanvas:active {
+  cursor: grabbing;
+}
+
+#glCanvas.laser-cursor {
+  cursor: crosshair;
+}
+
+/* Subtle cinematic vignette + scanline grain */
+.vignette {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(circle at 50% 50%, transparent 56%, rgba(2, 3, 5, 0.62) 100%);
+  z-index: 2;
+}
+
+/* Top HUD */
+.hud-top {
+  position: absolute;
+  top: 16px;
+  left: 18px;
+  right: 18px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  z-index: 10;
+  pointer-events: none;
+}
+
+.brand-cluster {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  pointer-events: auto;
+  background: rgba(10, 12, 18, 0.62);
+  backdrop-filter: blur(16px) saturate(140%);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  border-radius: 14px;
+  padding: 8px 14px 8px 10px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+}
+
+.element-tile {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  background: linear-gradient(145deg, rgba(255,255,255,0.10), rgba(255,255,255,0.02));
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: 3px 5px;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.element-tile .z-num {
+  font-size: 12px;
+  line-height: 1;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.62);
+  align-self: flex-start;
+  font-variant-numeric: tabular-nums;
+}
+
+.element-tile .sym {
+  font-size: 19px;
+  line-height: 1;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: #ffffff;
+  margin-top: -2px;
+}
+
+.element-tile .mass {
+  font-size: 12px;
+  line-height: 1;
+  color: rgba(255, 255, 255, 0.45);
+  transform: scale(0.82);
+  transform-origin: center bottom;
+  font-variant-numeric: tabular-nums;
+}
+
+.phase-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.phase-kicker {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.56);
+}
+
+.phase-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #6ee7ff;
+  box-shadow: 0 0 10px #6ee7ff;
+  transition: background 0.35s ease, box-shadow 0.35s ease;
+}
+
+.phase-title-row {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.phase-title {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: #ffffff;
+}
+
+.phase-telemetry {
+  font-size: 12px;
+  font-family: "SF Mono", "JetBrains Mono", ui-monospace, Menlo, monospace;
+  color: rgba(210, 225, 255, 0.72);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Top-right actions */
+.top-actions {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  pointer-events: auto;
+}
+
+.pill-btn {
+  appearance: none;
+  background: rgba(12, 15, 22, 0.66);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: rgba(242, 244, 248, 0.84);
+  height: 34px;
+  padding: 0 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+
+.pill-btn:hover {
+  background: rgba(28, 34, 48, 0.82);
+  border-color: rgba(255, 255, 255, 0.26);
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+.pill-btn.active {
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 255, 255, 0.36);
+  color: #ffffff;
+}
+
+.pill-btn.rec-active {
+  background: rgba(239, 68, 68, 0.22);
+  border-color: rgba(248, 113, 113, 0.65);
+  color: #fecaca;
+}
+
+.status-led {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.32);
+  transition: all 0.2s ease;
+}
+
+.pill-btn.active .status-led {
+  background: #5eead4;
+  box-shadow: 0 0 8px #5eead4;
+}
+
+.pill-btn.rec-active .status-led {
+  background: #ef4444;
+  box-shadow: 0 0 10px #ef4444;
+  animation: pulseRec 1s infinite ease-in-out;
+}
+
+.sound-prompt-pulse {
+  border-color: rgba(125, 211, 252, 0.45);
+  animation: subtleGlow 2.4s infinite ease-in-out;
+}
+
+@keyframes pulseRec {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.82); }
+}
+
+@keyframes subtleGlow {
+  0%, 100% { box-shadow: 0 0 0 rgba(125, 211, 252, 0); }
+  50% { box-shadow: 0 0 16px rgba(125, 211, 252, 0.28); }
+}
+
+/* Equalizer bars */
+.eq-bars {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 12px;
+}
+
+.eq-bars span {
+  width: 2px;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.45);
+  border-radius: 1px;
+  transition: height 0.1s ease;
+}
+
+.pill-btn.sound-on .eq-bars span {
+  background: #7dd3fc;
+  animation: eqBounce 0.85s infinite ease-in-out alternate;
+}
+.pill-btn.sound-on .eq-bars span:nth-child(2) { animation-delay: 0.18s; }
+.pill-btn.sound-on .eq-bars span:nth-child(3) { animation-delay: 0.36s; }
+.pill-btn.sound-on .eq-bars span:nth-child(4) { animation-delay: 0.11s; }
+
+@keyframes eqBounce {
+  0% { height: 3px; }
+  100% { height: 12px; }
+}
+
+/* Center subtle hint toast */
+.gesture-hint {
+  position: absolute;
+  top: 76px;
+  left: 18px;
+  z-index: 8;
+  pointer-events: none;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.56);
+  letter-spacing: 0.02em;
+  transition: opacity 0.4s ease;
+  text-shadow: 0 2px 10px rgba(0,0,0,0.85);
+}
+
+/* X-Ray Engineering Blueprint Panel */
+.xray-panel {
+  position: absolute;
+  top: 72px;
+  right: 18px;
+  width: 320px;
+  background: rgba(8, 11, 17, 0.84);
+  backdrop-filter: blur(20px) saturate(150%);
+  -webkit-backdrop-filter: blur(20px) saturate(150%);
+  border: 1px solid rgba(125, 211, 252, 0.26);
+  border-radius: 14px;
+  padding: 13px 14px;
+  z-index: 12;
+  box-shadow: 0 16px 44px rgba(0, 0, 0, 0.6);
+  font-family: "SF Mono", "JetBrains Mono", ui-monospace, Menlo, monospace;
+  font-size: 12px;
+  color: #dbeafe;
+  opacity: 0;
+  transform: translateY(-8px) scale(0.98);
+  pointer-events: none;
+  transition: opacity 0.22s ease, transform 0.22s ease;
+}
+
+.xray-panel.open {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+}
+
+.xray-badge {
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: rgba(56, 189, 248, 0.14);
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  color: #7dd3fc;
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  margin-bottom: 10px;
+}
+
+.xray-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px 10px;
+  margin-bottom: 10px;
+  padding-bottom: 9px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.09);
+}
+
+.xray-kv span:first-child {
+  display: block;
+  color: rgba(255, 255, 255, 0.45);
+  font-size: 12px;
+}
+
+.xray-kv span:last-child {
+  color: #f8fafc;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.xray-eq {
+  background: rgba(255, 255, 255, 0.04);
+  border-left: 2px solid #38bdf8;
+  padding: 7px 9px;
+  border-radius: 0 6px 6px 0;
+  color: rgba(226, 232, 240, 0.9);
+  line-height: 1.45;
+  margin-bottom: 10px;
+  font-size: 12px;
+}
+
+.scope-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.scope-label {
+  display: flex;
+  justify-content: space-between;
+  color: rgba(255, 255, 255, 0.48);
+  font-size: 12px;
+}
+
+#scopeCanvas {
+  width: 100%;
+  height: 44px;
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  border-radius: 7px;
+}
+
+/* Bottom HUD Dock */
+.hud-bottom {
+  position: absolute;
+  bottom: 16px;
+  left: 18px;
+  right: 18px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 14px;
+  z-index: 10;
+  pointer-events: none;
+}
+
+.dock-center {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  max-width: 100%;
+  pointer-events: auto;
+}
+
+/* Context controls for current phase */
+.context-bar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  background: rgba(10, 12, 18, 0.66);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.11);
+  border-radius: 12px;
+  padding: 5px 7px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+}
+
+.ctx-label {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.46);
+  padding: 0 6px;
+}
+
+.ctx-chip {
+  appearance: none;
+  background: transparent;
+  border: 1px solid transparent;
+  color: rgba(241, 245, 249, 0.76);
+  height: 27px;
+  padding: 0 10px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.ctx-chip:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+}
+
+.ctx-chip.active {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.28);
+  color: #ffffff;
+}
+
+.ctx-chip.accent-action {
+  background: rgba(56, 189, 248, 0.14);
+  border-color: rgba(56, 189, 248, 0.34);
+  color: #bae6fd;
+}
+
+.ctx-chip.accent-action:hover,
+.ctx-chip.accent-action:active {
+  background: rgba(56, 189, 248, 0.28);
+  color: #ffffff;
+}
+
+.ctx-divider {
+  width: 1px;
+  height: 16px;
+  background: rgba(255, 255, 255, 0.12);
+  margin: 0 2px;
+}
+
+.bios-input {
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(94, 234, 212, 0.38);
+  color: #ecfdf5;
+  border-radius: 7px;
+  height: 27px;
+  width: 118px;
+  padding: 0 9px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  outline: none;
+  font-family: "SF Mono", "JetBrains Mono", ui-monospace, monospace;
+}
+
+.bios-input:focus {
+  border-color: #5eead4;
+  box-shadow: 0 0 12px rgba(94, 234, 212, 0.25);
+}
+
+.stat-pill {
+  font-family: "SF Mono", "JetBrains Mono", ui-monospace, monospace;
+  font-size: 12px;
+  font-weight: 700;
+  color: #fde68a;
+  padding: 0 8px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* 5 Allotrope Phase Tabs */
+.phase-tabs {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(10, 12, 18, 0.74);
+  backdrop-filter: blur(18px) saturate(140%);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 14px;
+  padding: 5px;
+  box-shadow: 0 12px 34px rgba(0, 0, 0, 0.5);
+  overflow-x: auto;
+  max-width: calc(100vw - 36px);
+  scrollbar-width: none;
+}
+
+.phase-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.phase-tab {
+  position: relative;
+  appearance: none;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  padding: 7px 12px;
+  color: rgba(226, 232, 240, 0.66);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1px;
+  transition: all 0.2s ease;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.phase-tab:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: #ffffff;
+}
+
+.phase-tab.active {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.24);
+  color: #ffffff;
+}
+
+.tab-top {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.tab-idx {
+  font-family: "SF Mono", ui-monospace, monospace;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.38);
+}
+
+.phase-tab.active .tab-idx {
+  color: #7dd3fc;
+}
+
+.tab-sub {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.44);
+  font-family: "SF Mono", ui-monospace, monospace;
+}
+
+.tab-progress {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 2px;
+  width: 0%;
+  background: linear-gradient(90deg, #38bdf8, #c084fc, #fbbf24);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.phase-tab.active .tab-progress {
+  opacity: 1;
+}
+
+/* Interactive P-T Phase Diagram mini-widget */
+.pt-widget {
+  pointer-events: auto;
+  background: rgba(10, 12, 18, 0.72);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 13px;
+  padding: 8px 10px;
+  width: 156px;
+  flex-shrink: 0;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.45);
+}
+
+.pt-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  font-family: "SF Mono", ui-monospace, monospace;
+  color: rgba(255, 255, 255, 0.54);
+  margin-bottom: 5px;
+}
+
+#ptCanvas {
+  width: 134px;
+  height: 70px;
+  display: block;
+  border-radius: 7px;
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  cursor: crosshair;
+}
+
+/* Responsive rules for narrow blog embeds & mobile */
+@media (max-width: 820px) {
+  .pt-widget {
+    display: none;
+  }
+  .phase-telemetry {
+    display: none;
+  }
+  .tab-sub {
+    display: none;
+  }
+  .hud-top {
+    top: 10px;
+    left: 10px;
+    right: 10px;
+  }
+  .hud-bottom {
+    bottom: 10px;
+    left: 10px;
+    right: 10px;
+  }
+  .gesture-hint {
+    top: 66px;
+    left: 12px;
+  }
+}
+
+@media (max-width: 560px) {
+  .brand-cluster {
+    padding: 6px 10px 6px 7px;
+    gap: 8px;
+  }
+  .element-tile {
+    width: 36px;
+    height: 36px;
+  }
+  .element-tile .mass {
+    display: none;
+  }
+  .pill-btn span.btn-label-hide-sm {
+    display: none;
+  }
+  .xray-panel {
+    left: 10px;
+    right: 10px;
+    width: auto;
+  }
+}
+
+  </style>
+</head>
+<body>
+  <div id="app">
+    <canvas id="glCanvas"></canvas>
+    <div class="vignette"></div>
+
+    <!-- Top Instrument Bar -->
+    <header class="hud-top">
+      <div class="brand-cluster">
+        <div class="element-tile" title="Carbon · 1s² 2s² 2p²">
+          <span class="z-num">6</span>
+          <span class="sym">C</span>
+          <span class="mass">12.011</span>
+        </div>
+        <div class="phase-meta">
+          <div class="phase-kicker">
+            <span class="phase-dot" id="phaseDot"></span>
+            <span id="phaseHybrid">sp³ TETRAHEDRAL LATTICE</span>
+          </div>
+          <div class="phase-title-row">
+            <span class="phase-title" id="phaseTitle">DIAMOND PRISM</span>
+            <span class="phase-telemetry" id="phaseTelemetry">15.0 GPa · 1,800 K · n = 2.417</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="top-actions">
+        <button class="pill-btn active" id="btnAuto" title="Toggle cinematic auto-tour across all 5 allotropes">
+          <span class="status-led"></span>
+          <span>AUTO</span>
+        </button>
+        <button class="pill-btn" id="btnXray" title="Toggle live engineering blueprint, equations &amp; DSP oscilloscope (Key: X)">
+          <span>X-RAY</span>
+        </button>
+        <button class="pill-btn" id="btnRec" title="Record 60fps video + stereo audio clip (.webm)">
+          <span class="status-led"></span>
+          <span id="recLabel">REC</span>
+        </button>
+        <button class="pill-btn sound-prompt-pulse" id="btnSound" title="Toggle procedural physical-modeling WebAudio engine (Key: M)">
+          <span class="eq-bars"><span></span><span></span><span></span><span></span></span>
+          <span id="soundLabel">SOUND</span>
+        </button>
+        <button class="pill-btn" id="btnFullscreen" title="Toggle Fullscreen (Key: F)">
+          <span>⛶</span>
+        </button>
+      </div>
+    </header>
+
+    <div class="gesture-hint" id="gestureHint">
+      Drag crystal to refract · Move light · Tap to ring eigenmodes
+    </div>
+
+    <!-- X-Ray Live Telemetry & Equations Drawer -->
+    <aside class="xray-panel" id="xrayPanel">
+      <div class="xray-badge">0 LIBS · 0 MESHES · 0 SAMPLES · 1 FILE</div>
+      <div class="xray-grid">
+        <div class="xray-kv">
+          <span>ENGINE</span>
+          <span id="xrFps">60 FPS · 1.4 ms</span>
+        </div>
+        <div class="xray-kv">
+          <span>PRIMITIVES</span>
+          <span id="xrPrims">32 Half-Spaces · 7λ</span>
+        </div>
+        <div class="xray-kv">
+          <span>GPU PIPELINE</span>
+          <span id="xrPasses">Analytic Ray + Caustic FBO</span>
+        </div>
+        <div class="xray-kv">
+          <span>ACOUSTICS</span>
+          <span id="xrAudio">Modal Bell + Velvet IR</span>
+        </div>
+      </div>
+      <div class="xray-eq" id="xrEquation">
+        n(λ) = 2.378 + 0.0138 / λ² · 6-bounce TIR + Fresnel R(θ)
+      </div>
+      <div class="scope-wrap">
+        <div class="scope-label">
+          <span>WEBAUDIO REAL-TIME SYNTH</span>
+          <span id="xrNote">D5 LYDIAN</span>
+        </div>
+        <canvas id="scopeCanvas" width="290" height="44"></canvas>
+      </div>
+    </aside>
+
+    <!-- Bottom Controls & 5 Allotrope Switcher -->
+    <footer class="hud-bottom">
+      <div class="dock-center">
+        <div class="context-bar" id="contextBar"></div>
+
+        <nav class="phase-tabs" aria-label="Carbon Allotropes">
+          <button class="phase-tab active" data-phase="0">
+            <div class="tab-top"><span class="tab-idx">01</span><span>DIAMOND</span></div>
+            <span class="tab-sub">sp³ · Optics</span>
+            <div class="tab-progress" id="prog0"></div>
+          </button>
+          <button class="phase-tab" data-phase="1">
+            <div class="tab-top"><span class="tab-idx">02</span><span>GRAPHENE</span></div>
+            <span class="tab-sub">sp² · Mechanics</span>
+            <div class="tab-progress" id="prog1"></div>
+          </button>
+          <button class="phase-tab" data-phase="2">
+            <div class="tab-top"><span class="tab-idx">03</span><span>FULLERENE</span></div>
+            <span class="tab-sub">C₆₀ · Topology</span>
+            <div class="tab-progress" id="prog2"></div>
+          </button>
+          <button class="phase-tab" data-phase="3">
+            <div class="tab-top"><span class="tab-idx">04</span><span>BIOS</span></div>
+            <span class="tab-sub">65k GPU Life</span>
+            <div class="tab-progress" id="prog3"></div>
+          </button>
+          <button class="phase-tab" data-phase="4">
+            <div class="tab-top"><span class="tab-idx">05</span><span>STARFORGE</span></div>
+            <span class="tab-sub">10⁸ K · 3α→¹²C</span>
+            <div class="tab-progress" id="prog4"></div>
+          </button>
+        </nav>
+      </div>
+
+      <div class="pt-widget" title="Drag across Pressure-Temperature phase space">
+        <div class="pt-header">
+          <span>P–T PHASE</span>
+          <span id="ptCoord">15 GPa</span>
+        </div>
+        <canvas id="ptCanvas" width="134" height="70"></canvas>
+      </div>
+    </footer>
+  </div>
+
+  <script>
+// Procedural Physical-Modeling WebAudio Synthesizer (Zero External Samples)
+class CarbonAudioEngine {
+  constructor() {
+    this.ctx = null;
+    this.enabled = false;
+    this.unlocked = false;
+    this.currentPhase = 0;
+    this.lastPluckTime = 0;
+    this.lastGrainTime = 0;
+    this.lastFusionTime = 0;
+    this.lastNoteName = 'D5 LYDIAN';
+    this.crushLevel = 0;
+
+    // Scales (Hz)
+    this.lydianD = [293.66, 329.63, 369.99, 415.30, 440.00, 493.88, 554.37, 587.33, 659.25, 739.99, 830.61, 880.00, 987.77, 1174.66];
+    this.noteNamesD = ['D4','E4','F#4','G#4','A4','B4','C#5','D5','E5','F#5','G#5','A5','B5','D6'];
+    this.lydianF = [174.61, 196.00, 220.00, 246.94, 261.63, 293.66, 329.63, 349.23, 392.00, 440.00, 493.88, 523.25, 587.33, 659.25, 698.46, 783.99];
+    this.noteNamesF = ['F3','G3','A3','B3','C4','D4','E4','F4','G4','A4','B4','C5','D5','E5','F5','G5'];
+    this.handpanG = [196.00, 220.00, 246.94, 293.66, 329.63, 392.00, 440.00, 493.88, 587.33];
+    this.noteNamesG = ['G3','A3','B3','D4','E4','G4','A4','B4','D5'];
+    this.bioScale = [523.25, 587.33, 659.25, 783.99, 987.77, 1046.50, 1174.66, 1318.51, 1567.98];
+  }
+
+  init() {
+    if (this.ctx) return;
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if (!AudioCtx) return;
+    this.ctx = new AudioCtx();
+
+    // Master chain: MasterGain -> Compressor -> Analyser -> Destination
+    this.masterGain = this.ctx.createGain();
+    this.masterGain.gain.value = 0.78;
+
+    this.compressor = this.ctx.createDynamicsCompressor();
+    this.compressor.threshold.value = -8;
+    this.compressor.knee.value = 14;
+    this.compressor.ratio.value = 6;
+    this.compressor.attack.value = 0.003;
+    this.compressor.release.value = 0.18;
+
+    this.analyser = this.ctx.createAnalyser();
+    this.analyser.fftSize = 256;
+    this.analyser.smoothingTimeConstant = 0.82;
+    this.scopeData = new Uint8Array(this.analyser.frequencyBinCount);
+
+    // MediaStream tap for built-in video+audio recorder
+    this.streamDest = this.ctx.createMediaStreamDestination();
+
+    // Dry + Algorithmic Velvet-Shimmer Stereo Reverb
+    this.dryBus = this.ctx.createGain();
+    this.dryBus.gain.value = 0.72;
+
+    this.reverbBus = this.ctx.createGain();
+    this.reverbBus.gain.value = 0.42;
+    this.convolver = this.ctx.createConvolver();
+    this.convolver.buffer = this._buildVelvetImpulse(2.5, 2.8);
+
+    this.dryBus.connect(this.masterGain);
+    this.reverbBus.connect(this.convolver);
+    this.convolver.connect(this.masterGain);
+
+    this.masterGain.connect(this.compressor);
+    this.compressor.connect(this.analyser);
+    this.analyser.connect(this.ctx.destination);
+    this.compressor.connect(this.streamDest);
+
+    // Shared noise buffer for plasma/snap/stellar rumble
+    this.noiseBuffer = this._buildNoiseBuffer(2.0);
+
+    // Continuous ambient beds for the 5 phases
+    this._setupAmbientBeds();
+  }
+
+  _buildVelvetImpulse(duration, decay) {
+    const rate = this.ctx.sampleRate;
+    const len = Math.floor(rate * duration);
+    const buf = this.ctx.createBuffer(2, len, rate);
+    for (let ch = 0; ch < 2; ch++) {
+      const data = buf.getChannelData(ch);
+      let lp = 0;
+      for (let i = 0; i < len; i++) {
+        const t = i / len;
+        const env = Math.pow(1 - t, decay);
+        // Sparse velvet reflections + smooth diffuse tail
+        const raw = (Math.random() * 2 - 1) * env;
+        lp = lp * 0.72 + raw * 0.28;
+        data[i] = lp * 0.85;
+      }
+    }
+    return buf;
+  }
+
+  _buildNoiseBuffer(seconds) {
+    const rate = this.ctx.sampleRate;
+    const len = Math.floor(rate * seconds);
+    const buf = this.ctx.createBuffer(1, len, rate);
+    const d = buf.getChannelData(0);
+    let b0 = 0, b1 = 0, b2 = 0;
+    for (let i = 0; i < len; i++) {
+      const w = Math.random() * 2 - 1;
+      // Pink-ish filter
+      b0 = 0.99765 * b0 + w * 0.0990460;
+      b1 = 0.96300 * b1 + w * 0.2965164;
+      b2 = 0.57000 * b2 + w * 1.0526913;
+      d[i] = (b0 + b1 + b2 + w * 0.1848) * 0.16;
+    }
+    return buf;
+  }
+
+  _setupAmbientBeds() {
+    const now = this.ctx.currentTime;
+    this.beds = [];
+
+    // 0: Diamond crystalline fifth shimmer (D4 + A4 + F#5)
+    const dGain = this.ctx.createGain();
+    dGain.gain.value = 0;
+    const dFilter = this.ctx.createBiquadFilter();
+    dFilter.type = 'lowpass';
+    dFilter.frequency.value = 1400;
+    [293.66, 440.0, 739.99].forEach((f, idx) => {
+      const o = this.ctx.createOscillator();
+      o.type = idx === 2 ? 'sine' : 'triangle';
+      o.frequency.value = f;
+      o.detune.value = (idx - 1) * 4;
+      const g = this.ctx.createGain();
+      g.gain.value = idx === 2 ? 0.018 : 0.03;
+      o.connect(g);
+      g.connect(dFilter);
+      o.start(now);
+    });
+    dFilter.connect(dGain);
+    dGain.connect(this.reverbBus);
+    dGain.connect(this.dryBus);
+    this.diamondFilter = dFilter;
+    this.beds.push(dGain);
+
+    // 1: Graphene taut quantum lattice hum (F2 + C3)
+    const gGain = this.ctx.createGain();
+    gGain.gain.value = 0;
+    [87.31, 130.81, 261.63].forEach((f, idx) => {
+      const o = this.ctx.createOscillator();
+      o.type = 'sine';
+      o.frequency.value = f;
+      const g = this.ctx.createGain();
+      g.gain.value = idx === 2 ? 0.015 : 0.038;
+      o.connect(g);
+      g.connect(gGain);
+      o.start(now);
+    });
+    gGain.connect(this.dryBus);
+    this.beds.push(gGain);
+
+    // 2: Fullerene hollow geodesic cavity drone (G2 + D3)
+    const fGain = this.ctx.createGain();
+    fGain.gain.value = 0;
+    [98.0, 146.83, 293.66].forEach((f, idx) => {
+      const o = this.ctx.createOscillator();
+      o.type = idx === 1 ? 'triangle' : 'sine';
+      o.frequency.value = f;
+      const g = this.ctx.createGain();
+      g.gain.value = 0.028;
+      o.connect(g);
+      g.connect(fGain);
+      o.start(now);
+    });
+    fGain.connect(this.reverbBus);
+    this.beds.push(fGain);
+
+    // 3: Bios breathing generative ambient pad (C3 + G3 + D4 + E4 + B4)
+    const bGain = this.ctx.createGain();
+    bGain.gain.value = 0;
+    const bFilter = this.ctx.createBiquadFilter();
+    bFilter.type = 'lowpass';
+    bFilter.frequency.value = 620;
+    const lfo = this.ctx.createOscillator();
+    lfo.frequency.value = 0.14;
+    const lfoGain = this.ctx.createGain();
+    lfoGain.gain.value = 280;
+    lfo.connect(lfoGain);
+    lfoGain.connect(bFilter.frequency);
+    lfo.start(now);
+
+    [130.81, 196.0, 293.66, 329.63, 493.88].forEach((f, idx) => {
+      const o = this.ctx.createOscillator();
+      o.type = idx % 2 === 0 ? 'triangle' : 'sine';
+      o.frequency.value = f;
+      o.detune.value = (idx - 2) * 5.5;
+      const g = this.ctx.createGain();
+      g.gain.value = 0.024;
+      o.connect(g);
+      g.connect(bFilter);
+      o.start(now);
+    });
+    bFilter.connect(bGain);
+    bGain.connect(this.reverbBus);
+    bGain.connect(this.dryBus);
+    this.beds.push(bGain);
+
+    // 4: Starforge relativistic core sub-bass + plasma roar
+    const sGain = this.ctx.createGain();
+    sGain.gain.value = 0;
+    const sFilter = this.ctx.createBiquadFilter();
+    sFilter.type = 'lowpass';
+    sFilter.frequency.value = 135;
+    sFilter.Q.value = 2.4;
+
+    this.starSub1 = this.ctx.createOscillator();
+    this.starSub1.type = 'sawtooth';
+    this.starSub1.frequency.value = 43.65; // F1
+    this.starSub2 = this.ctx.createOscillator();
+    this.starSub2.type = 'triangle';
+    this.starSub2.frequency.value = 65.41; // C2
+
+    const subMix = this.ctx.createGain();
+    subMix.gain.value = 0.09;
+    this.starSub1.connect(subMix);
+    this.starSub2.connect(subMix);
+
+    const plasmaNoise = this.ctx.createBufferSource();
+    plasmaNoise.buffer = this.noiseBuffer;
+    plasmaNoise.loop = true;
+    const nGain = this.ctx.createGain();
+    nGain.gain.value = 0.16;
+    plasmaNoise.connect(nGain);
+    nGain.connect(sFilter);
+
+    subMix.connect(sFilter);
+    sFilter.connect(sGain);
+    sGain.connect(this.dryBus);
+    sGain.connect(this.reverbBus);
+
+    this.starSub1.start(now);
+    this.starSub2.start(now);
+    plasmaNoise.start(now);
+    this.starFilter = sFilter;
+    this.beds.push(sGain);
+  }
+
+  unlockAndEnable() {
+    this.init();
+    if (!this.ctx) return false;
+    if (this.ctx.state === 'suspended') {
+      this.ctx.resume();
+    }
+    this.unlocked = true;
+    this.enabled = true;
+    this.masterGain.gain.setTargetAtTime(0.78, this.ctx.currentTime, 0.08);
+    this.setPhase(this.currentPhase, true);
+    return true;
+  }
+
+  toggle() {
+    if (!this.unlocked) {
+      return this.unlockAndEnable();
+    }
+    this.enabled = !this.enabled;
+    const now = this.ctx.currentTime;
+    this.masterGain.gain.setTargetAtTime(this.enabled ? 0.78 : 0.0001, now, 0.06);
+    if (this.enabled) {
+      this.setPhase(this.currentPhase, false);
+    }
+    return this.enabled;
+  }
+
+  setPhase(phaseIdx, playTransition = true) {
+    this.currentPhase = phaseIdx;
+    if (!this.ctx || !this.enabled) return;
+    const now = this.ctx.currentTime;
+    this.beds.forEach((bed, idx) => {
+      const target = idx === phaseIdx ? 1.0 : 0.0001;
+      bed.gain.setTargetAtTime(target, now, 0.35);
+    });
+    if (playTransition) {
+      this._playTransitionSignature(phaseIdx);
+    }
+  }
+
+  _panner(panVal) {
+    if (this.ctx.createStereoPanner) {
+      const p = this.ctx.createStereoPanner();
+      p.pan.value = Math.max(-0.95, Math.min(0.95, panVal || 0));
+      return p;
+    }
+    const g = this.ctx.createGain();
+    return g;
+  }
+
+  _playTransitionSignature(phaseIdx) {
+    const now = this.ctx.currentTime;
+    if (phaseIdx === 0) {
+      // Crystalline chord bloom
+      this.ringCrystal(0.75, -0.25, 0);
+      setTimeout(() => this.ringCrystal(0.65, 0.3, 2), 90);
+    } else if (phaseIdx === 1) {
+      // Quick harp arpeggio
+      [0, 2, 4, 7].forEach((step, i) => {
+        setTimeout(() => this.pluckBond(0.3 + i * 0.1, (i - 1.5) * 0.4, step / 10), i * 55);
+      });
+    } else if (phaseIdx === 2) {
+      this.strikeFullerene(0.8, 0, false);
+    } else if (phaseIdx === 3) {
+      this.bioGrain(-0.3, 0.7);
+      setTimeout(() => this.bioGrain(0.35, 0.8), 110);
+    } else if (phaseIdx === 4) {
+      this.fusionFlash(0, 1.0);
+    }
+  }
+
+  // Phase 0: Modal Crystal Eigenmode Bell
+  ringCrystal(intensity = 0.7, pan = 0, cutIdx = 0) {
+    if (!this.ctx || !this.enabled) return;
+    const now = this.ctx.currentTime;
+    const idx = Math.min(this.lydianD.length - 1, Math.max(0, Math.floor((cutIdx * 2 + Math.random() * 6))));
+    const baseFreq = this.lydianD[idx];
+    this.lastNoteName = this.noteNamesD[idx] + ' CRYSTAL';
+
+    const panner = this._panner(pan);
+    panner.connect(this.dryBus);
+    panner.connect(this.reverbBus);
+
+    const ratios = [1.0, 2.756, 5.404, 8.933];
+    const amps = [0.15, 0.065, 0.028, 0.012];
+    const decays = [1.9, 1.1, 0.65, 0.32];
+
+    ratios.forEach((r, i) => {
+      const f = baseFreq * r;
+      if (f > 15000) return;
+      const osc = this.ctx.createOscillator();
+      osc.type = 'sine';
+      osc.frequency.value = f;
+
+      const g = this.ctx.createGain();
+      const peak = amps[i] * Math.min(1.2, Math.max(0.15, intensity));
+      g.gain.setValueAtTime(0.0001, now);
+      g.gain.linearRampToValueAtTime(peak, now + 0.004);
+      g.gain.exponentialRampToValueAtTime(0.0001, now + decays[i]);
+
+      osc.connect(g);
+      g.connect(panner);
+      osc.start(now);
+      osc.stop(now + decays[i] + 0.05);
+    });
+  }
+
+  updateDiamondMotion(speed) {
+    if (!this.ctx || !this.enabled || !this.diamondFilter) return;
+    const target = 900 + Math.min(3200, speed * 1800);
+    this.diamondFilter.frequency.setTargetAtTime(target, this.ctx.currentTime, 0.08);
+  }
+
+  // Phase 1: Polyphonic Acoustic Waveguide Graphene Harp
+  pluckBond(strain = 0.3, pan = 0, pitchNorm = 0.5) {
+    if (!this.ctx || !this.enabled) return;
+    const now = this.ctx.currentTime;
+    if (now - this.lastPluckTime < 0.048) return; // Clean glissando rate limit
+    this.lastPluckTime = now;
+
+    const idx = Math.min(
+      this.lydianF.length - 1,
+      Math.max(0, Math.floor(pitchNorm * (this.lydianF.length - 3) + strain * 2.5))
+    );
+    const freq = this.lydianF[idx] * (1 + Math.min(0.06, strain * 0.02));
+    this.lastNoteName = this.noteNamesF[idx] + ' WAVEGUIDE';
+
+    const panner = this._panner(pan);
+    panner.connect(this.dryBus);
+    panner.connect(this.reverbBus);
+
+    const filter = this.ctx.createBiquadFilter();
+    filter.type = 'lowpass';
+    filter.Q.value = 2.2;
+    filter.frequency.setValueAtTime(Math.min(7000, freq * 7.5), now);
+    filter.frequency.exponentialRampToValueAtTime(Math.max(220, freq * 1.4), now + 0.45);
+
+    const env = this.ctx.createGain();
+    const vel = Math.min(0.18, 0.07 + strain * 0.08);
+    env.gain.setValueAtTime(0.0001, now);
+    env.gain.linearRampToValueAtTime(vel, now + 0.005);
+    env.gain.exponentialRampToValueAtTime(0.0001, now + 0.85);
+
+    const o1 = this.ctx.createOscillator();
+    o1.type = 'sawtooth';
+    o1.frequency.value = freq;
+
+    const o2 = this.ctx.createOscillator();
+    o2.type = 'triangle';
+    o2.frequency.value = freq * 2.0;
+    const g2 = this.ctx.createGain();
+    g2.gain.value = 0.35;
+
+    o1.connect(filter);
+    o2.connect(g2);
+    g2.connect(filter);
+    filter.connect(env);
+    env.connect(panner);
+
+    o1.start(now);
+    o2.start(now);
+    o1.stop(now + 0.9);
+    o2.stop(now + 0.9);
+  }
+
+  snapBond(pan = 0) {
+    if (!this.ctx || !this.enabled) return;
+    const now = this.ctx.currentTime;
+    if (now - this.lastPluckTime < 0.035) return;
+    this.lastPluckTime = now;
+    this.lastNoteName = 'σ-BOND CLEAVE';
+
+    const panner = this._panner(pan);
+    panner.connect(this.dryBus);
+
+    const src = this.ctx.createBufferSource();
+    src.buffer = this.noiseBuffer;
+    const bp = this.ctx.createBiquadFilter();
+    bp.type = 'bandpass';
+    bp.frequency.setValueAtTime(2800, now);
+    bp.frequency.exponentialRampToValueAtTime(520, now + 0.09);
+    bp.Q.value = 3.5;
+
+    const g = this.ctx.createGain();
+    g.gain.setValueAtTime(0.24, now);
+    g.gain.exponentialRampToValueAtTime(0.0001, now + 0.1);
+
+    src.connect(bp);
+    bp.connect(g);
+    g.connect(panner);
+    src.start(now);
+    src.stop(now + 0.11);
+  }
+
+  annealChord() {
+    if (!this.ctx || !this.enabled) return;
+    this.lastNoteName = 'sp² ANNEAL';
+    [261.63, 329.63, 392.00, 493.88, 587.33].forEach((f, i) => {
+      setTimeout(() => {
+        if (!this.ctx || !this.enabled) return;
+        const now = this.ctx.currentTime;
+        const o = this.ctx.createOscillator();
+        o.type = 'sine';
+        o.frequency.value = f;
+        const g = this.ctx.createGain();
+        g.gain.setValueAtTime(0.0001, now);
+        g.gain.linearRampToValueAtTime(0.08, now + 0.03);
+        g.gain.exponentialRampToValueAtTime(0.0001, now + 1.1);
+        o.connect(g);
+        g.connect(this.reverbBus);
+        g.connect(this.dryBus);
+        o.start(now);
+        o.stop(now + 1.15);
+      }, i * 45);
+    });
+  }
+
+  // Phase 2: Geodesic Handpan / Hang-Drum (1 : 2 : 2.997 harmonic ratios)
+  strikeFullerene(velocity = 0.7, pan = 0, endohedral = true) {
+    if (!this.ctx || !this.enabled) return;
+    const now = this.ctx.currentTime;
+    if (endohedral && now - this.lastPluckTime < 0.09) return;
+    this.lastPluckTime = now;
+
+    const idx = Math.floor(Math.random() * this.handpanG.length);
+    const f0 = this.handpanG[idx] * (endohedral ? 1.0 : 0.5);
+    this.lastNoteName = this.noteNamesG[idx] + (endohedral ? ' @C60' : ' CAGE');
+
+    const panner = this._panner(pan);
+    panner.connect(this.dryBus);
+    panner.connect(this.reverbBus);
+
+    [1.0, 2.0, 2.997].forEach((ratio, i) => {
+      const osc = this.ctx.createOscillator();
+      osc.type = i === 0 ? 'triangle' : 'sine';
+      // Characteristic steel handpan pitch envelope
+      osc.frequency.setValueAtTime(f0 * ratio * 1.016, now);
+      osc.frequency.exponentialRampToValueAtTime(f0 * ratio, now + 0.028);
+
+      const g = this.ctx.createGain();
+      const amp = (i === 0 ? 0.14 : i === 1 ? 0.065 : 0.03) * Math.min(1.1, velocity);
+      const dec = i === 0 ? 1.25 : 0.75;
+      g.gain.setValueAtTime(0.0001, now);
+      g.gain.linearRampToValueAtTime(amp, now + 0.005);
+      g.gain.exponentialRampToValueAtTime(0.0001, now + dec);
+
+      osc.connect(g);
+      g.connect(panner);
+      osc.start(now);
+      osc.stop(now + dec + 0.05);
+    });
+  }
+
+  // Phase 3: Bioluminescent Chemotaxis Grains
+  bioGrain(pan = 0, energy = 0.5) {
+    if (!this.ctx || !this.enabled) return;
+    const now = this.ctx.currentTime;
+    if (now - this.lastGrainTime < 0.075) return;
+    this.lastGrainTime = now;
+
+    const f = this.bioScale[Math.floor(Math.random() * this.bioScale.length)];
+    this.lastNoteName = 'CHEMOTAXIS ' + Math.round(f) + 'Hz';
+
+    const panner = this._panner(pan);
+    panner.connect(this.reverbBus);
+    panner.connect(this.dryBus);
+
+    const osc = this.ctx.createOscillator();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(f * 0.99, now);
+    osc.frequency.exponentialRampToValueAtTime(f * 1.005, now + 0.18);
+
+    const g = this.ctx.createGain();
+    const peak = 0.045 * Math.min(1.2, Math.max(0.25, energy));
+    g.gain.setValueAtTime(0.0001, now);
+    g.gain.linearRampToValueAtTime(peak, now + 0.012);
+    g.gain.exponentialRampToValueAtTime(0.0001, now + 0.42);
+
+    osc.connect(g);
+    g.connect(panner);
+    osc.start(now);
+    osc.stop(now + 0.45);
+  }
+
+  // Phase 4: Stellar Core Crush + 7.65 MeV Hoyle Fusion Bell
+  setStarCrush(crush01) {
+    this.crushLevel = crush01;
+    if (!this.ctx || !this.enabled || !this.starFilter) return;
+    const now = this.ctx.currentTime;
+    this.starFilter.frequency.setTargetAtTime(135 + crush01 * 620, now, 0.06);
+    this.starSub1.frequency.setTargetAtTime(43.65 * (1 + crush01 * 0.38), now, 0.06);
+    this.starSub2.frequency.setTargetAtTime(65.41 * (1 + crush01 * 0.38), now, 0.06);
+  }
+
+  fusionFlash(pan = 0, intensity = 0.8) {
+    if (!this.ctx || !this.enabled) return;
+    const now = this.ctx.currentTime;
+    if (now - this.lastFusionTime < 0.055) return;
+    this.lastFusionTime = now;
+    this.lastNoteName = '7.65 MeV HOYLE → ¹²C';
+
+    const panner = this._panner(pan);
+    panner.connect(this.dryBus);
+    panner.connect(this.reverbBus);
+
+    // High gamma harmonic ping + low fusion thump
+    const chord = [523.25, 783.99, 1174.66, 1567.98];
+    const base = chord[Math.floor(Math.random() * chord.length)];
+
+    [base, base * 1.5].forEach((f, idx) => {
+      const o = this.ctx.createOscillator();
+      o.type = 'sine';
+      o.frequency.value = f;
+      const g = this.ctx.createGain();
+      g.gain.setValueAtTime(0.0001, now);
+      g.gain.linearRampToValueAtTime((idx === 0 ? 0.09 : 0.04) * intensity, now + 0.003);
+      g.gain.exponentialRampToValueAtTime(0.0001, now + 0.95);
+      o.connect(g);
+      g.connect(panner);
+      o.start(now);
+      o.stop(now + 1.0);
+    });
+
+    const sub = this.ctx.createOscillator();
+    sub.type = 'sine';
+    sub.frequency.setValueAtTime(125, now);
+    sub.frequency.exponentialRampToValueAtTime(38, now + 0.22);
+    const sg = this.ctx.createGain();
+    sg.gain.setValueAtTime(0.18 * intensity, now);
+    sg.gain.exponentialRampToValueAtTime(0.0001, now + 0.26);
+    sub.connect(sg);
+    sg.connect(panner);
+    sub.start(now);
+    sub.stop(now + 0.28);
+  }
+
+  sampleScope() {
+    if (!this.analyser || !this.enabled) return null;
+    this.analyser.getByteTimeDomainData(this.scopeData);
+    return this.scopeData;
+  }
+}
+
+
+// WebGL2 (#version 300 es) Shaders for all 5 Carbon Allotropes
+
+const SHADERS = {
+  fullscreenVert: `#version 300 es
+precision highp float;
+out vec2 vUv;
+void main() {
+  vec2 pos = vec2((gl_VertexID << 1) & 2, gl_VertexID & 2);
+  vUv = pos;
+  gl_Position = vec4(pos * 2.0 - 1.0, 0.0, 1.0);
+}`,
+
+  // =========================================================================
+  // PHASE 0: DIAMOND — 32-Half-Space Analytic Raytracer + 7-Band Dispersion
+  // =========================================================================
+  diamondFrag: `#version 300 es
+precision highp float;
+in vec2 vUv;
+out vec4 fragColor;
+
+uniform vec2 uRes;
+uniform float uTime;
+uniform mat3 uRot;
+uniform mat3 uRotInv;
+uniform vec4 uPlanes[32];
+uniform vec3 uLightDir;
+uniform float uDispersion;
+uniform float uRingPulse;
+uniform float uFlash;
+uniform sampler2D uCausticTex;
+
+// High-contrast jewelers' darkroom HDR environment for maximum scintillation
+vec3 sampleJewelEnv(vec3 d, vec3 lightDir) {
+  d = normalize(d);
+  vec3 col = vec3(0.008, 0.011, 0.018);
+
+  // Overhead studio softbox strips (crucial for diamond facet contrast)
+  float up = max(d.y, 0.0);
+  float strip1 = smoothstep(0.86, 0.94, abs(sin(d.x * 5.2 + 0.4))) * pow(up, 0.65);
+  float strip2 = smoothstep(0.90, 0.97, abs(cos(d.z * 6.0 - 0.3))) * pow(up, 0.8);
+  col += vec3(0.95, 0.97, 1.0) * (strip1 * 2.1 + strip2 * 1.7);
+
+  // Collimated prism key spotlight
+  float keyDot = max(dot(d, lightDir), 0.0);
+  col += vec3(1.0, 0.98, 0.95) * (pow(keyDot, 90.0) * 14.0 + pow(keyDot, 12.0) * 1.15);
+
+  // Cool cyan & warm amber rim reflectors
+  float rimA = pow(max(dot(d, normalize(vec3(-0.85, 0.25, -0.45))), 0.0), 6.0);
+  float rimB = pow(max(dot(d, normalize(vec3(0.82, 0.15, 0.55))), 0.0), 7.0);
+  col += vec3(0.22, 0.68, 1.0) * rimA * 1.35;
+  col += vec3(1.0, 0.55, 0.22) * rimB * 0.95;
+
+  // Horizon dark obsidian band
+  col *= mix(0.35, 1.0, smoothstep(-0.25, 0.15, d.y));
+  return col;
+}
+
+// Exact convex hull entry/exit intersection in crystal-local coordinates
+bool intersectCrystal(vec3 ro, vec3 rd, out float tNear, out float tFar, out vec3 nNear, out vec3 nFar) {
+  tNear = -1e9;
+  tFar = 1e9;
+  nNear = vec3(0.0, 1.0, 0.0);
+  nFar = vec3(0.0, 1.0, 0.0);
+
+  for (int i = 0; i < 32; i++) {
+    vec3 n = uPlanes[i].xyz;
+    float h = uPlanes[i].w;
+    float denom = dot(n, rd);
+    float dist = h - dot(n, ro);
+    if (abs(denom) < 1e-6) {
+      if (dist < 0.0) return false;
+    } else {
+      float t = dist / denom;
+      if (denom < 0.0) {
+        if (t > tNear) {
+          tNear = t;
+          nNear = n;
+        }
+      } else {
+        if (t < tFar) {
+          tFar = t;
+          nFar = n;
+        }
+      }
+      if (tNear > tFar) return false;
+    }
+  }
+  return tFar > 0.0;
+}
+
+// Inside crystal: find next exit facet along internal ray
+float exitCrystal(vec3 ro, vec3 rd, out vec3 nExit) {
+  float tExit = 1e9;
+  nExit = vec3(0.0, 1.0, 0.0);
+  for (int i = 0; i < 32; i++) {
+    vec3 n = uPlanes[i].xyz;
+    float denom = dot(n, rd);
+    if (denom > 1e-5) {
+      float t = (uPlanes[i].w - dot(n, ro)) / denom;
+      if (t < tExit) {
+        tExit = t;
+        nExit = n;
+      }
+    }
+  }
+  return tExit;
+}
+
+float fresnelSchlick(float cosTheta, float f0) {
+  return f0 + (1.0 - f0) * pow(clamp(1.0 - cosTheta, 0.0, 1.0), 5.0);
+}
+
+// 7 perceptual spectral weights summing to (1.0, 1.0, 1.0)
+vec3 spectralWeight(int idx) {
+  if (idx == 0) return vec3(0.16, 0.00, 0.42); // 415nm Violet
+  if (idx == 1) return vec3(0.00, 0.09, 0.44); // 455nm Royal Blue
+  if (idx == 2) return vec3(0.00, 0.34, 0.14); // 495nm Cyan
+  if (idx == 3) return vec3(0.05, 0.41, 0.00); // 535nm Emerald
+  if (idx == 4) return vec3(0.30, 0.14, 0.00); // 575nm Gold
+  if (idx == 5) return vec3(0.31, 0.02, 0.00); // 615nm Amber-Red
+  return vec3(0.18, 0.00, 0.00);               // 655nm Deep Crimson
+}
+
+vec3 shadeFloor(vec3 ro, vec3 rd, vec3 lightDir) {
+  float floorY = -1.16;
+  if (rd.y >= -0.001) {
+    // Deep studio backdrop + volumetric collimated light beam hint
+    vec3 bg = vec3(0.016, 0.020, 0.030) * (1.0 - 0.45 * length(vUv - 0.5));
+    return bg;
+  }
+  float tF = (floorY - ro.y) / rd.y;
+  if (tF < 0.0 || tF > 28.0) return vec3(0.012, 0.015, 0.024);
+
+  vec3 p = ro + rd * tF;
+  float r = length(p.xz);
+  float fade = exp(-r * r * 0.085);
+
+  // Subtle brushed slate micro-grain
+  float grain = sin(p.x * 48.0) * sin(p.z * 48.0) * 0.012;
+  vec3 base = vec3(0.022 + grain, 0.026 + grain, 0.036 + grain);
+
+  // Soft ambient occlusion shadow directly beneath hovering crystal
+  float shadow = smoothstep(0.25, 1.45, r);
+  base *= mix(0.28, 1.0, shadow);
+
+  // Sample real-time refracted spectral caustic FBO!
+  vec2 cUv = p.xz * 0.155 + 0.5;
+  vec3 caustics = vec3(0.0);
+  if (cUv.x > 0.0 && cUv.x < 1.0 && cUv.y > 0.0 && cUv.y < 1.0) {
+    caustics = texture(uCausticTex, cUv).rgb * 2.35;
+  }
+
+  // Subtle concentric acoustic wave on floor when crystal is struck
+  if (uRingPulse > 0.001) {
+    float wave = sin(r * 14.0 - (1.0 - uRingPulse) * 28.0) * uRingPulse;
+    caustics += vec3(0.25, 0.65, 1.0) * max(wave, 0.0) * exp(-r * 0.6) * 0.45;
+  }
+
+  return (base + caustics) * fade + vec3(0.012, 0.015, 0.022) * (1.0 - fade);
+}
+
+// Volumetric light shaft passing into crystal crown
+vec3 volumetricBeam(vec3 ro, vec3 rd, vec3 lightDir) {
+  // Beam axis passes through (0, 0.1, 0) along -lightDir
+  vec3 bOrigin = vec3(0.0, 0.08, 0.0);
+  vec3 bAxis = normalize(lightDir);
+  vec3 w0 = ro - bOrigin;
+  float b = dot(rd, bAxis);
+  float d = 1.0 - b * b;
+  if (d < 1e-4) return vec3(0.0);
+  float e = dot(rd, w0);
+  float f = dot(bAxis, w0);
+  float tRay = (b * f - e) / d;
+  float tBeam = (f - b * e) / d;
+  if (tRay < 0.0 || tBeam < -0.2) return vec3(0.0);
+  vec3 pRay = ro + rd * tRay;
+  vec3 pBeam = bOrigin + bAxis * tBeam;
+  float dist = length(pRay - pBeam);
+  float coneRadius = 0.22 + tBeam * 0.035;
+  float glow = exp(-(dist * dist) / (coneRadius * coneRadius * 0.45));
+  float mask = smoothstep(-0.15, 0.5, tBeam) * exp(-tBeam * 0.28);
+  return vec3(0.75, 0.86, 1.0) * glow * mask * 0.13;
+}
+
+void main() {
+  vec2 uv = (vUv * 2.0 - 1.0);
+  uv.x *= uRes.x / max(uRes.y, 1.0);
+
+  vec3 ro = vec3(0.0, 0.36, 3.35);
+  vec3 target = vec3(0.0, -0.10, 0.0);
+  vec3 fwd = normalize(target - ro);
+  vec3 right = normalize(cross(fwd, vec3(0.0, 1.0, 0.0)));
+  vec3 up = cross(right, fwd);
+  vec3 rd = normalize(fwd * 1.82 + right * uv.x + up * uv.y);
+
+  vec3 lightDir = normalize(uLightDir);
+  vec3 color = shadeFloor(ro, rd, lightDir);
+
+  // Transform ray into crystal local space
+  vec3 roC = uRotInv * ro;
+  vec3 rdC = uRotInv * rd;
+
+  float tNear, tFar;
+  vec3 nNearC, nFarC;
+  if (intersectCrystal(roC, rdC, tNear, tFar, nNearC, nFarC) && tNear > 0.0) {
+    vec3 hitPosC = roC + rdC * tNear;
+    // Elastic acoustic eigenmode shimmer when tapped
+    if (uRingPulse > 0.001) {
+      float vib = sin(hitPosC.y * 24.0 + uTime * 55.0) * uRingPulse * 0.018;
+      nNearC = normalize(nNearC + vec3(vib, -vib * 0.5, vib));
+    }
+    vec3 nWorld = normalize(uRot * nNearC);
+
+    float cosI = clamp(dot(-rd, nWorld), 0.0, 1.0);
+    // Diamond F0 = ((2.417 - 1)/(2.417 + 1))^2 = 0.172
+    float F_outer = fresnelSchlick(cosI, 0.172);
+    vec3 reflWorld = reflect(rd, nWorld);
+    vec3 outerRefl = sampleJewelEnv(reflWorld, lightDir);
+    // Crisp specular glint on crown facets
+    outerRefl += vec3(1.0) * pow(max(dot(reflWorld, lightDir), 0.0), 180.0) * 6.0;
+
+    // 7-band Cauchy spectral dispersion inside the diamond
+    vec3 refractedSum = vec3(0.0);
+    for (int w = 0; w < 7; w++) {
+      float bandOffset = (float(w) - 3.0) / 3.0; // -1..+1
+      float ior = 2.417 + bandOffset * 0.036 * uDispersion;
+
+      vec3 pC = hitPosC + rdC * 0.0004;
+      vec3 dirC = refract(rdC, nNearC, 1.0 / ior);
+      vec3 specAccum = vec3(0.0);
+      float throughput = 1.0;
+      float pathLen = 0.0;
+
+      for (int b = 0; b < 5; b++) {
+        vec3 nExitC;
+        float tEx = exitCrystal(pC, dirC, nExitC);
+        pC += dirC * tEx;
+        pathLen += max(tEx, 0.0);
+
+        // Subtle facet edge sparkle
+        vec3 outC = refract(dirC, -nExitC, ior);
+        float cosIn = clamp(dot(-dirC, -nExitC), 0.0, 1.0);
+        // Critical angle & internal Fresnel
+        float sin2T = ior * ior * (1.0 - cosIn * cosIn);
+        float F_in = (sin2T >= 1.0) ? 1.0 : fresnelSchlick(sqrt(max(0.0, 1.0 - sin2T)), 0.172);
+
+        if (F_in < 0.999 && length(outC) > 0.001) {
+          vec3 outW = normalize(uRot * outC);
+          vec3 envSample = sampleJewelEnv(outW, lightDir);
+          // Also pick up floor tint if exiting downward
+          if (outW.y < -0.15) {
+            envSample += vec3(0.08, 0.11, 0.16);
+          }
+          specAccum += envSample * throughput * (1.0 - F_in);
+        }
+
+        throughput *= F_in;
+        if (throughput < 0.03) break;
+        dirC = reflect(dirC, -nExitC);
+        pC += dirC * 0.0004;
+      }
+
+      // Ultra-pure Type IIa carbon diamond slight cool-white Beer-Lambert clarity
+      vec3 absorb = exp(-vec3(0.035, 0.022, 0.015) * pathLen);
+      refractedSum += specAccum * absorb * spectralWeight(w);
+    }
+
+    // Crisp facet-edge bevel highlight
+    color = outerRefl * F_outer + refractedSum * (1.0 - F_outer * 0.65);
+  }
+
+  color += volumetricBeam(ro, rd, lightDir);
+  color += vec3(0.85, 0.93, 1.0) * uFlash;
+
+  // ACES Filmic tonemapping
+  color = (color * (2.51 * color + 0.03)) / (color * (2.43 * color + 0.59) + 0.14);
+  color = pow(clamp(color, 0.0, 1.0), vec3(1.0 / 2.2));
+  fragColor = vec4(color, 1.0);
+}`,
+
+  // Caustic splat pass into 256x256 caustic FBO
+  causticVert: `#version 300 es
+precision highp float;
+layout(location = 0) in vec2 aQuad;
+layout(location = 1) in vec4 aSplatPosSize; // xy in floor UV [0..1], z = size, w = angle
+layout(location = 2) in vec3 aSplatColor;
+out vec2 vLocal;
+out vec3 vColor;
+void main() {
+  vLocal = aQuad;
+  vColor = aSplatColor;
+  float c = cos(aSplatPosSize.w), s = sin(aSplatPosSize.w);
+  vec2 stretched = vec2(aQuad.x * 2.2, aQuad.y * 0.55) * aSplatPosSize.z;
+  vec2 rot = vec2(stretched.x * c - stretched.y * s, stretched.x * s + stretched.y * c);
+  vec2 clip = (aSplatPosSize.xy + rot) * 2.0 - 1.0;
+  gl_Position = vec4(clip, 0.0, 1.0);
+}`,
+
+  causticFrag: `#version 300 es
+precision highp float;
+in vec2 vLocal;
+in vec3 vColor;
+out vec4 fragColor;
+void main() {
+  float d2 = dot(vLocal, vLocal);
+  if (d2 > 1.0) discard;
+  float falloff = pow(1.0 - d2, 2.2);
+  fragColor = vec4(vColor * falloff, 1.0);
+}`,
+
+  // =========================================================================
+  // PHASES 1 & 2: MOLECULAR STUDIO BACKDROP + INSTANCED BONDS & SPHERE ATOMS
+  // =========================================================================
+  latticeBgFrag: `#version 300 es
+precision highp float;
+in vec2 vUv;
+out vec4 fragColor;
+uniform vec2 uRes;
+uniform float uTime;
+uniform int uMode; // 1 = Graphene, 2 = Fullerene
+uniform vec2 uCursor;
+uniform float uFlash;
+
+void main() {
+  vec2 p = (vUv - 0.5) * vec2(uRes.x / max(uRes.y, 1.0), 1.0);
+  float r = length(p);
+
+  vec3 base = (uMode == 1)
+    ? mix(vec3(0.032, 0.048, 0.075), vec3(0.008, 0.011, 0.018), smoothstep(0.0, 0.95, r))
+    : mix(vec3(0.045, 0.036, 0.072), vec3(0.008, 0.010, 0.018), smoothstep(0.0, 0.95, r));
+
+  // Subtle perspective laboratory measurement grid
+  vec2 g = abs(fract(p * 8.0) - 0.5);
+  float line = smoothstep(0.485, 0.5, max(g.x, g.y));
+  base += vec3(0.10, 0.18, 0.28) * line * 0.14 * exp(-r * 1.6);
+
+  // Subtle cursor field halo
+  vec2 cPos = (uCursor - 0.5) * vec2(uRes.x / max(uRes.y, 1.0), 1.0);
+  float cd = length(p - cPos);
+  vec3 haloCol = (uMode == 1) ? vec3(0.15, 0.65, 1.0) : vec3(0.95, 0.65, 0.25);
+  base += haloCol * exp(-cd * cd * 18.0) * 0.09;
+  base += vec3(0.85, 0.95, 1.0) * uFlash;
+
+  fragColor = vec4(pow(clamp(base, 0.0, 1.0), vec3(1.0 / 2.2)), 1.0);
+}`,
+
+  bondVert: `#version 300 es
+precision highp float;
+layout(location = 0) in vec2 aQuad; // x in [-1, 1] width, y in [0, 1] along bond
+layout(location = 1) in vec3 aP0;
+layout(location = 2) in vec3 aP1;
+layout(location = 3) in vec4 aMeta; // x = strain, y = bondOrder (1 or 2), z = thickness, w = pulse
+
+uniform mat4 uProjView;
+uniform vec2 uRes;
+
+out vec2 vUvBond;
+out vec4 vMeta;
+out float vDepth;
+
+void main() {
+  vec4 c0 = uProjView * vec4(aP0, 1.0);
+  vec4 c1 = uProjView * vec4(aP1, 1.0);
+  if (c0.w <= 0.05 || c1.w <= 0.05) {
+    gl_Position = vec4(2.0, 2.0, 2.0, 1.0);
+    return;
+  }
+  vec2 ndc0 = c0.xy / c0.w;
+  vec2 ndc1 = c1.xy / c1.w;
+
+  vec2 aspect = vec2(uRes.x / max(uRes.y, 1.0), 1.0);
+  vec2 dir = (ndc1 - ndc0) * aspect;
+  float len = length(dir);
+  vec2 tang = (len > 1e-5) ? (dir / len) : vec2(1.0, 0.0);
+  vec2 perp = vec2(-tang.y, tang.x) / aspect;
+
+  vec4 clip = mix(c0, c1, aQuad.y);
+  float pixelScale = aMeta.z / max(clip.w, 0.25);
+  clip.xy += perp * aQuad.x * pixelScale * clip.w;
+
+  vUvBond = aQuad;
+  vMeta = aMeta;
+  vDepth = clip.w;
+  gl_Position = clip;
+}`,
+
+  bondFrag: `#version 300 es
+precision highp float;
+in vec2 vUvBond;
+in vec4 vMeta;
+in float vDepth;
+out vec4 fragColor;
+
+void main() {
+  float x = vUvBond.x; // -1..1 across cylinder
+  float strain = vMeta.x;
+  float order = vMeta.y;
+  float pulse = vMeta.w;
+
+  // Cylindrical shading or double pi-bond twin-rail profile!
+  float profile;
+  if (order > 1.5) {
+    float rail1 = exp(-pow((abs(x) - 0.42) * 3.1, 2.0));
+    float core = (1.0 - x * x) * 0.45;
+    profile = clamp(rail1 + core, 0.0, 1.2);
+  } else {
+    if (abs(x) > 1.0) discard;
+    float nz = sqrt(max(0.0, 1.0 - x * x));
+    profile = pow(nz, 0.85) + pow(nz, 8.0) * 0.45;
+  }
+
+  // Color shifts with covalent strain: relaxed cyan-silver -> gold -> hot plasma magenta!
+  vec3 relaxed = (order > 1.5) ? vec3(0.38, 0.86, 1.0) : vec3(0.24, 0.62, 0.88);
+  vec3 medium = vec3(1.0, 0.78, 0.28);
+  vec3 critical = vec3(1.0, 0.22, 0.58);
+
+  float s = clamp(strain * 2.6, 0.0, 2.0);
+  vec3 col = (s < 1.0) ? mix(relaxed, medium, s) : mix(medium, critical, s - 1.0);
+  col += vec3(0.55, 0.92, 1.0) * pulse * 1.4;
+
+  // Depth atmospheric cue
+  float fog = clamp(1.32 - vDepth * 0.09, 0.25, 1.0);
+  float alpha = clamp(profile * 0.95, 0.0, 1.0);
+  if (alpha < 0.03) discard;
+
+  fragColor = vec4(pow(col * profile * fog, vec3(1.0 / 2.2)), alpha);
+}`,
+
+  atomVert: `#version 300 es
+precision highp float;
+layout(location = 0) in vec2 aQuad; // [-1, 1]^2
+layout(location = 1) in vec3 aPos;
+layout(location = 2) in vec4 aAtomMeta; // x = radius, y = energy/strain, z = kind (0=C, 1=Endohedral/He, 2=Be8, 3=C12), w = alpha
+
+uniform mat4 uProjView;
+uniform vec2 uRes;
+
+out vec2 vQuad;
+out vec4 vAtomMeta;
+out float vViewDepth;
+
+void main() {
+  vec4 clip = uProjView * vec4(aPos, 1.0);
+  if (clip.w <= 0.05) {
+    gl_Position = vec4(2.0, 2.0, 2.0, 1.0);
+    return;
+  }
+  vec2 aspect = vec2(uRes.y / max(uRes.x, 1.0), 1.0);
+  float sz = aAtomMeta.x / max(clip.w, 0.2);
+  clip.xy += aQuad * aspect * sz * clip.w;
+
+  vQuad = aQuad;
+  vAtomMeta = aAtomMeta;
+  vViewDepth = clip.w;
+  gl_Position = clip;
+}`,
+
+  atomFrag: `#version 300 es
+precision highp float;
+in vec2 vQuad;
+in vec4 vAtomMeta;
+in float vViewDepth;
+out vec4 fragColor;
+
+void main() {
+  float r2 = dot(vQuad, vQuad);
+  if (r2 > 1.0) discard;
+
+  float z = sqrt(1.0 - r2);
+  vec3 normal = normalize(vec3(vQuad.x, vQuad.y, z));
+  vec3 light1 = normalize(vec3(-0.45, 0.65, 0.72));
+  vec3 light2 = normalize(vec3(0.6, -0.35, 0.5));
+
+  float diff = max(dot(normal, light1), 0.0) * 0.78 + max(dot(normal, light2), 0.0) * 0.25 + 0.18;
+  vec3 halfV = normalize(light1 + vec3(0.0, 0.0, 1.0));
+  float spec = pow(max(dot(normal, halfV), 0.0), 36.0);
+  float fres = pow(1.0 - z, 3.0);
+
+  float energy = vAtomMeta.y;
+  int kind = int(vAtomMeta.z + 0.5);
+
+  vec3 baseCol;
+  vec3 rimCol;
+  if (kind == 0) {
+    // Carbon atom: obsidian-graphite metallic sphere with cyan-gold orbital rim
+    baseCol = mix(vec3(0.16, 0.24, 0.34), vec3(1.0, 0.58, 0.22), clamp(energy, 0.0, 1.0));
+    rimCol = mix(vec3(0.35, 0.85, 1.0), vec3(1.0, 0.85, 0.45), clamp(energy, 0.0, 1.0));
+  } else if (kind == 1) {
+    // Endohedral @La ion or 4He alpha particle: blazing solar gold!
+    baseCol = vec3(1.0, 0.68, 0.18);
+    rimCol = vec3(1.0, 0.95, 0.65);
+  } else if (kind == 2) {
+    // Unstable 8Be resonance dimer: electric violet-magenta
+    baseCol = vec3(0.88, 0.24, 1.0);
+    rimCol = vec3(1.0, 0.75, 1.0);
+  } else {
+    // Newly forged 12C nucleus in Starforge: incandescent diamond-cyan!
+    baseCol = vec3(0.32, 0.92, 1.0);
+    rimCol = vec3(1.0, 1.0, 1.0);
+  }
+
+  vec3 col = baseCol * diff + vec3(1.0) * spec * 0.85 + rimCol * fres * (0.85 + energy * 0.8);
+  float fog = clamp(1.38 - vViewDepth * 0.085, 0.25, 1.0);
+  col *= fog;
+
+  // Soft outer corona near sphere edge
+  float edgeAlpha = smoothstep(1.0, 0.86, r2) * vAtomMeta.w;
+  fragColor = vec4(pow(clamp(col, 0.0, 2.2), vec3(1.0 / 2.2)), edgeAlpha);
+}`,
+
+  // =========================================================================
+  // PHASE 3: BIOS — 65,536-Agent GPGPU Chemotaxis + Morphogenetic Typography
+  // =========================================================================
+  biosAgentUpdateFrag: `#version 300 es
+precision highp float;
+in vec2 vUv;
+out vec4 fragColor;
+
+uniform sampler2D uAgentTex;
+uniform sampler2D uTrailTex;
+uniform sampler2D uTextTex;
+uniform vec2 uWorldRes;
+uniform float uTime;
+uniform vec2 uPointer;     // [0..1]
+uniform float uPointerAct; // 0 = idle, 1 = attract, -1 = scatter shock
+uniform float uTextStrength;
+
+float hash13(vec3 p3) {
+  p3 = fract(p3 * 0.1031);
+  p3 += dot(p3, p3.zyx + 31.32);
+  return fract((p3.x + p3.y) * p3.z);
+}
+
+float sense(vec2 pos, float angle, vec2 aspect) {
+  vec2 dir = vec2(cos(angle), sin(angle)) * aspect;
+  vec2 sp = fract(pos + dir * 0.0105);
+  float trail = dot(texture(uTrailTex, sp).rgb, vec3(0.5, 0.35, 0.15));
+  float textNutrient = texture(uTextTex, vec2(sp.x, 1.0 - sp.y)).r;
+  return trail + textNutrient * uTextStrength * 3.1;
+}
+
+void main() {
+  ivec2 coord = ivec2(gl_FragCoord.xy);
+  vec4 state = texelFetch(uAgentTex, coord, 0); // xy = pos, z = angle, w = species [0..1]
+
+  vec2 pos = state.xy;
+  float angle = state.z;
+  float species = state.w;
+
+  vec2 aspect = vec2(uWorldRes.y / max(uWorldRes.x, 1.0), 1.0);
+  float sensorAngle = 0.46 + species * 0.16;
+
+  float fC = sense(pos, angle, aspect);
+  float fL = sense(pos, angle + sensorAngle, aspect);
+  float fR = sense(pos, angle - sensorAngle, aspect);
+
+  float rnd = hash13(vec3(pos * 512.0, uTime));
+  float turnSpeed = 0.28 + species * 0.12;
+
+  if (fC >= fL && fC >= fR) {
+    angle += (rnd - 0.5) * 0.08;
+  } else if (fC < fL && fC < fR) {
+    angle += (rnd > 0.5 ? 1.0 : -1.0) * turnSpeed;
+  } else if (fL > fR) {
+    angle += turnSpeed;
+  } else if (fR > fL) {
+    angle -= turnSpeed;
+  }
+
+  // Cursor interaction: chemotactic nutrient lure OR radial bioluminescent scatter!
+  if (abs(uPointerAct) > 0.01) {
+    vec2 delta = (uPointer - pos) * vec2(uWorldRes.x / max(uWorldRes.y, 1.0), 1.0);
+    float d = length(delta);
+    if (d < 0.28 && d > 0.001) {
+      float targetA = atan(delta.y, delta.x * (uWorldRes.y / max(uWorldRes.x, 1.0)));
+      if (uPointerAct > 0.0) {
+        angle = mix(angle, targetA, 0.16 * (1.0 - d / 0.28));
+      } else {
+        angle = targetA + 3.14159265 + (rnd - 0.5) * 0.5;
+      }
+    }
+  }
+
+  // Slow down inside nutrient-rich letters so dense vascular filaments form cleanly
+  float onText = texture(uTextTex, vec2(pos.x, 1.0 - pos.y)).r * uTextStrength;
+  float speed = mix(0.0031, 0.0015, clamp(onText, 0.0, 1.0)) * (0.85 + species * 0.35);
+  if (uPointerAct < -0.5) speed *= 2.4;
+
+  vec2 vel = vec2(cos(angle), sin(angle)) * aspect * speed;
+  pos = fract(pos + vel);
+
+  fragColor = vec4(pos, mod(angle, 6.2831853), species);
+}`,
+
+  biosDepositVert: `#version 300 es
+precision highp float;
+uniform sampler2D uAgentTex;
+uniform int uGridSize;
+out float vSpecies;
+void main() {
+  ivec2 ij = ivec2(gl_VertexID % uGridSize, gl_VertexID / uGridSize);
+  vec4 state = texelFetch(uAgentTex, ij, 0);
+  vSpecies = state.w;
+  gl_Position = vec4(state.xy * 2.0 - 1.0, 0.0, 1.0);
+  gl_PointSize = 1.35;
+}`,
+
+  biosDepositFrag: `#version 300 es
+precision highp float;
+in float vSpecies;
+out vec4 fragColor;
+void main() {
+  vec3 c = mix(vec3(0.035, 0.095, 0.085), vec3(0.085, 0.055, 0.020), vSpecies);
+  fragColor = vec4(c, 1.0);
+}`,
+
+  biosDiffuseFrag: `#version 300 es
+precision highp float;
+in vec2 vUv;
+out vec4 fragColor;
+uniform sampler2D uTrailTex;
+uniform sampler2D uTextTex;
+uniform vec2 uTexel;
+uniform float uTextStrength;
+
+void main() {
+  vec3 sum = vec3(0.0);
+  sum += texture(uTrailTex, vUv + vec2(-uTexel.x, -uTexel.y)).rgb * 0.065;
+  sum += texture(uTrailTex, vUv + vec2( 0.0,      -uTexel.y)).rgb * 0.120;
+  sum += texture(uTrailTex, vUv + vec2( uTexel.x, -uTexel.y)).rgb * 0.065;
+  sum += texture(uTrailTex, vUv + vec2(-uTexel.x,  0.0     )).rgb * 0.120;
+  sum += texture(uTrailTex, vUv).rgb                              * 0.260;
+  sum += texture(uTrailTex, vUv + vec2( uTexel.x,  0.0     )).rgb * 0.120;
+  sum += texture(uTrailTex, vUv + vec2(-uTexel.x,  uTexel.y)).rgb * 0.065;
+  sum += texture(uTrailTex, vUv + vec2( 0.0,       uTexel.y)).rgb * 0.120;
+  sum += texture(uTrailTex, vUv + vec2( uTexel.x,  uTexel.y)).rgb * 0.065;
+
+  float txt = texture(uTextTex, vec2(vUv.x, 1.0 - vUv.y)).r * uTextStrength;
+  vec3 decayed = sum * 0.942 + vec3(0.008, 0.014, 0.012) * txt;
+  fragColor = vec4(clamp(decayed, 0.0, 1.0), 1.0);
+}`,
+
+  biosDisplayFrag: `#version 300 es
+precision highp float;
+in vec2 vUv;
+out vec4 fragColor;
+uniform sampler2D uTrailTex;
+uniform sampler2D uTextTex;
+uniform float uTextStrength;
+uniform float uFlash;
+uniform float uTime;
+
+void main() {
+  vec3 tr = texture(uTrailTex, vUv).rgb;
+  float density = tr.r * 1.15 + tr.g * 1.45 + tr.b * 0.8;
+
+  // Deep abyssal Petri dish background
+  vec2 c = vUv - 0.5;
+  vec3 bg = vec3(0.009, 0.014, 0.020) * (1.0 - 0.45 * dot(c, c));
+
+  // Bioluminescent organic palette: deep emerald -> electric cyan -> ATP warm gold cores
+  vec3 low = vec3(0.04, 0.34, 0.38);
+  vec3 mid = vec3(0.18, 0.92, 0.78);
+  vec3 high = vec3(1.0, 0.92, 0.62);
+
+  float d1 = clamp(density * 1.35, 0.0, 1.0);
+  float d2 = clamp((density - 0.42) * 1.7, 0.0, 1.0);
+  vec3 bio = mix(bg, low, smoothstep(0.02, 0.25, d1));
+  bio = mix(bio, mid, smoothstep(0.18, 0.68, d1));
+  bio = mix(bio, high, smoothstep(0.35, 0.95, d2));
+
+  // Subtle metabolic pulse wave across living vascular network
+  float pulse = 0.92 + 0.08 * sin(uTime * 2.4 - length(c) * 9.0);
+  bio *= pulse;
+
+  // Faint ghost outline of nutrient inscription field
+  float txt = texture(uTextTex, vec2(vUv.x, 1.0 - vUv.y)).r * uTextStrength;
+  bio += vec3(0.03, 0.09, 0.08) * txt * 0.35;
+  bio += vec3(0.8, 1.0, 0.95) * uFlash;
+
+  fragColor = vec4(pow(clamp(bio, 0.0, 1.0), vec3(1.0 / 2.2)), 1.0);
+}`,
+
+  // =========================================================================
+  // PHASE 4: STARFORGE — Gravitational Lensing + 10^8 K Helium Core + Shockwaves
+  // =========================================================================
+  starforgeFrag: `#version 300 es
+precision highp float;
+in vec2 vUv;
+out vec4 fragColor;
+
+uniform vec2 uRes;
+uniform float uTime;
+uniform float uCrush;         // 0..1 gravitational core compression
+uniform vec4 uShocks[8];      // xy = screen center, z = radius, w = intensity
+uniform float uFlash;
+
+float hash21(vec2 p) {
+  vec3 p3 = fract(vec3(p.xyx) * 0.1031);
+  p3 += dot(p3, p3.yzx + 33.33);
+  return fract((p3.x + p3.y) * p3.z);
+}
+
+float noise(vec2 p) {
+  vec2 i = floor(p);
+  vec2 f = fract(p);
+  f = f * f * (3.0 - 2.0 * f);
+  float a = hash21(i);
+  float b = hash21(i + vec2(1.0, 0.0));
+  float c = hash21(i + vec2(0.0, 1.0));
+  float d = hash21(i + vec2(1.0, 1.0));
+  return mix(mix(a, b, f.x), mix(c, d, f.x), f.y);
+}
+
+float fbm(vec2 p) {
+  float v = 0.0;
+  float amp = 0.5;
+  mat2 rot = mat2(0.8, -0.6, 0.6, 0.8);
+  for (int i = 0; i < 5; i++) {
+    v += amp * noise(p);
+    p = rot * p * 2.05;
+    amp *= 0.5;
+  }
+  return v;
+}
+
+vec3 starfield(vec2 uv) {
+  vec3 col = vec3(0.006, 0.009, 0.018);
+  // Nebula dust wisps
+  float neb = fbm(uv * 2.8 + vec2(0.1, -0.2));
+  col += mix(vec3(0.04, 0.02, 0.08), vec3(0.01, 0.06, 0.11), neb) * smoothstep(0.35, 0.85, neb);
+
+  // Two crisp procedural star layers
+  for (int layer = 1; layer <= 2; layer++) {
+    float scale = float(layer) * 26.0;
+    vec2 gv = fract(uv * scale) - 0.5;
+    vec2 id = floor(uv * scale);
+    float rnd = hash21(id + float(layer) * 19.7);
+    if (rnd > 0.72) {
+      vec2 offset = vec2(fract(rnd * 34.1) - 0.5, fract(rnd * 91.7) - 0.5) * 0.6;
+      float d = length(gv - offset);
+      float star = exp(-d * d * 240.0) * (rnd - 0.7) * 4.5;
+      vec3 tint = mix(vec3(1.0, 0.78, 0.58), vec3(0.68, 0.86, 1.0), fract(rnd * 13.7));
+      col += tint * star;
+    }
+  }
+  return col;
+}
+
+// Approximate Planck blackbody color
+vec3 blackbody(float temp01) {
+  vec3 cold = vec3(0.85, 0.16, 0.04);
+  vec3 mid = vec3(1.0, 0.62, 0.15);
+  vec3 hot = vec3(1.0, 0.96, 0.88);
+  vec3 ultra = vec3(0.62, 0.86, 1.0);
+  if (temp01 < 0.35) return mix(cold, mid, temp01 / 0.35);
+  if (temp01 < 0.72) return mix(mid, hot, (temp01 - 0.35) / 0.37);
+  return mix(hot, ultra, (temp01 - 0.72) / 0.28);
+}
+
+void main() {
+  vec2 aspect = vec2(uRes.x / max(uRes.y, 1.0), 1.0);
+  vec2 p = (vUv - 0.5) * aspect;
+
+  // Apply Hoyle 7.65 MeV gamma shockwave space-time ripples!
+  vec3 shockGlow = vec3(0.0);
+  for (int i = 0; i < 8; i++) {
+    vec4 sh = uShocks[i];
+    if (sh.w > 0.001) {
+      vec2 sp = (sh.xy - 0.5) * aspect;
+      vec2 diff = p - sp;
+      float dist = length(diff);
+      float ring = exp(-pow((dist - sh.z) * 26.0, 2.0)) * sh.w;
+      if (dist > 0.001) {
+        p -= (diff / dist) * ring * 0.028;
+      }
+      shockGlow += mix(vec3(0.45, 0.88, 1.0), vec3(1.0, 0.85, 0.45), clamp(dist * 2.0, 0.0, 1.0)) * ring * 1.45;
+    }
+  }
+
+  float r = length(p);
+  // Relativistic Schwarzschild gravitational lensing around degenerate helium core!
+  float coreRadius = mix(0.20, 0.115, uCrush);
+  float einsteinR = 0.022 + uCrush * 0.036;
+  vec2 lensedUv = p * (1.0 - einsteinR / (r * r + 0.022));
+  vec3 col = starfield(lensedUv * 0.7 + vec2(uTime * 0.004, 0.0));
+
+  // Convective plasma envelope + roaring 10^8 K Triple-Alpha core
+  float angle = atan(p.y, p.x);
+  float turb = fbm(vec2(r * 7.5 - uTime * 0.65, angle * 3.0 + uTime * 0.22));
+  float flare = fbm(p * 5.5 - vec2(uTime * 0.35, -uTime * 0.28));
+
+  float corona = exp(-max(r - coreRadius * 0.7, 0.0) * (5.2 - uCrush * 1.4));
+  float coreMask = smoothstep(coreRadius * 1.38, coreRadius * 0.25, r - (turb - 0.5) * 0.055);
+
+  float temp = clamp(coreMask * 0.85 + corona * 0.42 + flare * 0.22 + uCrush * 0.35, 0.0, 1.0);
+  vec3 plasma = blackbody(temp) * (coreMask * (2.2 + uCrush * 2.0) + corona * (0.85 + flare * 0.75));
+
+  // Einstein ring shimmer
+  float eRing = exp(-pow((r - coreRadius * 1.35) * 18.0, 2.0)) * (0.22 + uCrush * 0.55);
+  plasma += vec3(0.55, 0.82, 1.0) * eRing;
+
+  col = col * (1.0 - clamp(coreMask * 0.95, 0.0, 1.0)) + plasma + shockGlow;
+  col += vec3(0.9, 0.95, 1.0) * uFlash;
+
+  // Filmic tonemap
+  col = (col * (2.51 * col + 0.03)) / (col * (2.43 * col + 0.59) + 0.14);
+  fragColor = vec4(pow(clamp(col, 0.0, 1.0), vec3(1.0 / 2.2)), 1.0);
+}`
+};
+
+
+// Multi-Scale Carbon Physics, Crystallography & Nuclear Reaction Engines
+
+const Vec3 = {
+  norm(x, y, z) {
+    const l = Math.hypot(x, y, z) || 1;
+    return [x / l, y / l, z / l];
+  },
+  dot(a, b) {
+    return a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+  },
+  cross(a, b) {
+    return [
+      a[1] * b[2] - a[2] * b[1],
+      a[2] * b[0] - a[0] * b[2],
+      a[0] * b[1] - a[1] * b[0]
+    ];
+  }
+};
+
+function makePerspectiveProjView(aspect, camPos, target, fovDeg = 42) {
+  const f = 1.0 / Math.tan((fovDeg * Math.PI) / 360);
+  const nf = 1 / (0.1 - 40.0);
+  const P = [
+    f / aspect, 0, 0, 0,
+    0, f, 0, 0,
+    0, 0, (40.0 + 0.1) * nf, -1,
+    0, 0, (2 * 40.0 * 0.1) * nf, 0
+  ];
+
+  const zAxis = Vec3.norm(camPos[0] - target[0], camPos[1] - target[1], camPos[2] - target[2]);
+  const xAxis = Vec3.norm(...Vec3.cross([0, 1, 0], zAxis));
+  const yAxis = Vec3.cross(zAxis, xAxis);
+
+  const V = [
+    xAxis[0], yAxis[0], zAxis[0], 0,
+    xAxis[1], yAxis[1], zAxis[1], 0,
+    xAxis[2], yAxis[2], zAxis[2], 0,
+    -Vec3.dot(xAxis, camPos), -Vec3.dot(yAxis, camPos), -Vec3.dot(zAxis, camPos), 1
+  ];
+
+  // Column-major P * V
+  const out = new Float32Array(16);
+  for (let col = 0; col < 4; col++) {
+    for (let row = 0; row < 4; row++) {
+      let sum = 0;
+      for (let k = 0; k < 4; k++) {
+        sum += P[k * 4 + row] * V[col * 4 + k];
+      }
+      out[col * 4 + row] = sum;
+    }
+  }
+  return out;
+}
+
+function projectToNDC(pv, x, y, z) {
+  const cx = pv[0] * x + pv[4] * y + pv[8] * z + pv[12];
+  const cy = pv[1] * x + pv[5] * y + pv[9] * z + pv[13];
+  const cw = pv[3] * x + pv[7] * y + pv[11] * z + pv[15];
+  if (cw <= 0.05) return null;
+  return [cx / cw, cy / cw, cw];
+}
+
+// ============================================================================
+// 1. DIAMOND 32-PLANE CONVEX CRYSTALLOGRAPHY + CPU CAUSTIC BUNDLE TRACER
+// ============================================================================
+class DiamondOpticsSim {
+  constructor() {
+    this.cutNames = ['BRILLIANT', 'OCTAHEDRON', 'EMERALD', 'GEODESIC'];
+    this.cuts = [
+      this._makeBrilliant(),
+      this._makeOctahedron(),
+      this._makeEmerald(),
+      this._makeGeodesic()
+    ];
+    this.cutIndex = 0;
+    this.currentPlanes = this.cuts[0].map(p => p.slice());
+    this.planeUniforms = new Float32Array(32 * 4);
+
+    this.yaw = 0.45;
+    this.pitch = 0.24;
+    this.velYaw = 0.38;
+    this.velPitch = 0.0;
+
+    this.lightAzimuth = 0.62;
+    this.lightElev = 0.78;
+    this.dispersion = 1.35;
+    this.ringPulse = 0.0;
+
+    this.rotMat = new Float32Array(9);
+    this.rotInv = new Float32Array(9);
+
+    this.maxSplats = 360;
+    this.splatPosSize = new Float32Array(this.maxSplats * 4);
+    this.splatColor = new Float32Array(this.maxSplats * 3);
+    this.activeSplats = 0;
+  }
+
+  _sortPlanes(planes) {
+    return planes.slice().sort((a, b) => (a[1] - b[1]) || (Math.atan2(a[2], a[0]) - Math.atan2(b[2], b[0])));
+  }
+
+  _makeBrilliant() {
+    const p = [];
+    p.push([0, 1, 0, 0.56]);
+    p.push([0, -1, 0, 0.92]);
+    for (let i = 0; i < 8; i++) {
+      const a = (i / 8) * Math.PI * 2;
+      p.push([...Vec3.norm(Math.cos(a) * Math.sin(0.60), Math.cos(0.60), Math.sin(a) * Math.sin(0.60)), 0.78]);
+    }
+    for (let i = 0; i < 6; i++) {
+      const a = ((i + 0.5) / 6) * Math.PI * 2;
+      p.push([...Vec3.norm(Math.cos(a) * Math.sin(0.42), Math.cos(0.42), Math.sin(a) * Math.sin(0.42)), 0.71]);
+    }
+    for (let i = 0; i < 8; i++) {
+      const a = ((i + 0.25) / 8) * Math.PI * 2;
+      p.push([...Vec3.norm(Math.cos(a) * Math.sin(0.715), -Math.cos(0.715), Math.sin(a) * Math.sin(0.715)), 0.70]);
+    }
+    for (let i = 0; i < 8; i++) {
+      const a = (i / 8) * Math.PI * 2;
+      p.push([Math.cos(a), 0, Math.sin(a), 0.98]);
+    }
+    return this._sortPlanes(p);
+  }
+
+  _makeOctahedron() {
+    const p = [];
+    for (const sx of [-1, 1]) for (const sy of [-1, 1]) for (const sz of [-1, 1]) {
+      p.push([...Vec3.norm(sx, sy * 0.92, sz), 0.78]);
+    }
+    for (const s1 of [-1, 1]) for (const s2 of [-1, 1]) {
+      p.push([...Vec3.norm(s1, s2, 0), 0.96]);
+      p.push([...Vec3.norm(s1, 0, s2), 0.98]);
+      p.push([...Vec3.norm(0, s1, s2), 0.96]);
+    }
+    for (let i = 0; i < 12; i++) {
+      const a = (i / 12) * Math.PI * 2;
+      p.push([...Vec3.norm(Math.cos(a), i % 2 === 0 ? 0.35 : -0.35, Math.sin(a)), 1.15]);
+    }
+    return this._sortPlanes(p);
+  }
+
+  _makeEmerald() {
+    const p = [];
+    p.push([0, 1, 0, 0.52]);
+    p.push([0, -1, 0, 0.82]);
+    for (let i = 0; i < 8; i++) {
+      const a = (i / 8) * Math.PI * 2;
+      const dx = Math.cos(a) / 1.18;
+      const dz = Math.sin(a) / 0.88;
+      const k = (i % 2 === 1) ? 0.95 : 1.0;
+      p.push([...Vec3.norm(dx * 0.55, 0.83, dz * 0.55), 0.68 * k]);
+      p.push([...Vec3.norm(dx * 0.82, 0.57, dz * 0.82), 0.80 * k]);
+      p.push([...Vec3.norm(dx * 0.78, -0.62, dz * 0.78), 0.74 * k]);
+    }
+    for (let i = 0; i < 6; i++) {
+      const a = (i / 6) * Math.PI * 2;
+      p.push([...Vec3.norm(Math.cos(a), -0.85, Math.sin(a) * 0.8), 0.78]);
+    }
+    return this._sortPlanes(p);
+  }
+
+  _makeGeodesic() {
+    const phi = (1 + Math.sqrt(5)) / 2;
+    const p = [];
+    for (const s1 of [-1, 1]) for (const s2 of [-1, 1]) {
+      p.push([...Vec3.norm(0, s1, s2 * phi), 0.82]);
+      p.push([...Vec3.norm(s1, s2 * phi, 0), 0.82]);
+      p.push([...Vec3.norm(s2 * phi, 0, s1), 0.82]);
+    }
+    for (const sx of [-1, 1]) for (const sy of [-1, 1]) for (const sz of [-1, 1]) {
+      p.push([...Vec3.norm(sx, sy, sz), 0.85]);
+    }
+    for (const s1 of [-1, 1]) for (const s2 of [-1, 1]) {
+      p.push([...Vec3.norm(0, s1 / phi, s2 * phi), 0.85]);
+      p.push([...Vec3.norm(s1 / phi, s2 * phi, 0), 0.85]);
+      p.push([...Vec3.norm(s2 * phi, 0, s1 / phi), 0.85]);
+    }
+    return this._sortPlanes(p);
+  }
+
+  setCut(idx) {
+    this.cutIndex = ((idx % 4) + 4) % 4;
+    this.ringPulse = 0.75;
+  }
+
+  strike() {
+    this.ringPulse = 1.0;
+    this.velYaw += (Math.random() > 0.5 ? 1 : -1) * 0.9;
+  }
+
+  getLightDir() {
+    const ce = Math.cos(this.lightElev);
+    return Vec3.norm(Math.sin(this.lightAzimuth) * ce, Math.sin(this.lightElev), Math.cos(this.lightAzimuth) * ce);
+  }
+
+  update(dt, isDragging) {
+    if (!isDragging) {
+      this.yaw += this.velYaw * dt;
+      this.pitch += this.velPitch * dt;
+      // Gentle cruise rotation so caustics dance even hands-free
+      this.velYaw = this.velYaw * Math.pow(0.28, dt) + 0.34 * (1 - Math.pow(0.28, dt));
+      this.velPitch = this.velPitch * Math.pow(0.15, dt);
+      this.pitch = Math.max(-0.85, Math.min(0.85, this.pitch));
+    }
+
+    this.ringPulse = Math.max(0, this.ringPulse - dt * 1.45);
+
+    // Morph currentPlanes smoothly toward target cut
+    const target = this.cuts[this.cutIndex];
+    const blend = 1 - Math.pow(0.0015, dt);
+    for (let i = 0; i < 32; i++) {
+      const c = this.currentPlanes[i];
+      const tg = target[i];
+      const nx = c[0] + (tg[0] - c[0]) * blend;
+      const ny = c[1] + (tg[1] - c[1]) * blend;
+      const nz = c[2] + (tg[2] - c[2]) * blend;
+      const nn = Vec3.norm(nx, ny, nz);
+      c[0] = nn[0]; c[1] = nn[1]; c[2] = nn[2];
+      c[3] = c[3] + (tg[3] - c[3]) * blend;
+
+      this.planeUniforms[i * 4 + 0] = c[0];
+      this.planeUniforms[i * 4 + 1] = c[1];
+      this.planeUniforms[i * 4 + 2] = c[2];
+      this.planeUniforms[i * 4 + 3] = c[3];
+    }
+
+    // Build column-major 3x3 rotation matrix Ry(yaw) * Rx(pitch)
+    const cy = Math.cos(this.yaw), sy = Math.sin(this.yaw);
+    const cp = Math.cos(this.pitch), sp = Math.sin(this.pitch);
+
+    // Columns of R
+    const r00 = cy,       r10 = 0,   r20 = -sy;
+    const r01 = sy * sp,  r11 = cp,  r21 = cy * sp;
+    const r02 = sy * cp,  r12 = -sp, r22 = cy * cp;
+
+    this.rotMat.set([r00, r10, r20, r01, r11, r21, r02, r12, r22]);
+    this.rotInv.set([r00, r01, r02, r10, r11, r12, r20, r21, r22]);
+
+    this._traceCaustics();
+  }
+
+  _mulRot(m, v) {
+    return [
+      m[0] * v[0] + m[3] * v[1] + m[6] * v[2],
+      m[1] * v[0] + m[4] * v[1] + m[7] * v[2],
+      m[2] * v[0] + m[5] * v[1] + m[8] * v[2]
+    ];
+  }
+
+  _refract(I, N, eta) {
+    const cosi = -(I[0] * N[0] + I[1] * N[1] + I[2] * N[2]);
+    const k = 1.0 - eta * eta * (1.0 - cosi * cosi);
+    if (k < 0.0) return null;
+    const s = eta * cosi - Math.sqrt(k);
+    return Vec3.norm(eta * I[0] + s * N[0], eta * I[1] + s * N[1], eta * I[2] + s * N[2]);
+  }
+
+  _reflect(I, N) {
+    const d = 2.0 * (I[0] * N[0] + I[1] * N[1] + I[2] * N[2]);
+    return [I[0] - d * N[0], I[1] - d * N[1], I[2] - d * N[2]];
+  }
+
+  _traceCaustics() {
+    const lightW = this.getLightDir();
+    const baseDirW = [-lightW[0], -lightW[1], -lightW[2]];
+    const rightW = Vec3.norm(...Vec3.cross(baseDirW, [0, 1, 0]));
+    const upW = Vec3.cross(rightW, baseDirW);
+
+    const bands = [
+      { ior: 2.417 - 0.045 * this.dispersion, col: [0.36, 0.07, 0.01] },
+      { ior: 2.417,                            col: [0.04, 0.30, 0.14] },
+      { ior: 2.417 + 0.045 * this.dispersion, col: [0.10, 0.12, 0.40] }
+    ];
+
+    let count = 0;
+    const grid = 13;
+    for (let gx = 0; gx < grid; gx++) {
+      for (let gy = 0; gy < grid; gy++) {
+        const ox = ((gx + 0.5) / grid - 0.5) * 1.55;
+        const oy = ((gy + 0.5) / grid - 0.5) * 1.55;
+        // Focused studio spotlight cone entering the crystal from above/side
+        const rayDirW = Vec3.norm(
+          baseDirW[0] + rightW[0] * ox * 0.28 + upW[0] * oy * 0.28,
+          baseDirW[1] + rightW[1] * ox * 0.28 + upW[1] * oy * 0.28 - 0.22,
+          baseDirW[2] + rightW[2] * ox * 0.28 + upW[2] * oy * 0.28
+        );
+        const rdC = this._mulRot(this.rotInv, rayDirW);
+
+        const roW = [
+          -rayDirW[0] * 3.0 + rightW[0] * ox * 0.72 + upW[0] * oy * 0.72,
+          -rayDirW[1] * 3.0 + rightW[1] * ox * 0.72 + upW[1] * oy * 0.72,
+          -rayDirW[2] * 3.0 + rightW[2] * ox * 0.72 + upW[2] * oy * 0.72
+        ];
+        const roC = this._mulRot(this.rotInv, roW);
+
+        let tNear = -1e9, tFar = 1e9, nNear = null;
+        let hit = true;
+        for (let i = 0; i < 32; i++) {
+          const pl = this.currentPlanes[i];
+          const den = pl[0] * rdC[0] + pl[1] * rdC[1] + pl[2] * rdC[2];
+          const dst = pl[3] - (pl[0] * roC[0] + pl[1] * roC[1] + pl[2] * roC[2]);
+          if (Math.abs(den) < 1e-6) {
+            if (dst < 0) { hit = false; break; }
+          } else {
+            const t = dst / den;
+            if (den < 0) { if (t > tNear) { tNear = t; nNear = pl; } }
+            else { if (t < tFar) tFar = t; }
+            if (tNear > tFar) { hit = false; break; }
+          }
+        }
+        if (!hit || !nNear || tNear < 0) continue;
+
+        const entryC = [roC[0] + rdC[0] * tNear, roC[1] + rdC[1] * tNear, roC[2] + rdC[2] * tNear];
+
+        for (let b = 0; b < 3; b++) {
+          if (count >= this.maxSplats) break;
+          const ior = bands[b].ior;
+          let dirC = this._refract(rdC, nNear, 1.0 / ior);
+          if (!dirC) continue;
+          let pC = [entryC[0] + dirC[0] * 0.001, entryC[1] + dirC[1] * 0.001, entryC[2] + dirC[2] * 0.001];
+
+          let exitedW = null, exitPosW = null;
+          for (let bounce = 0; bounce < 5; bounce++) {
+            let tEx = 1e9, nEx = null;
+            for (let i = 0; i < 32; i++) {
+              const pl = this.currentPlanes[i];
+              const den = pl[0] * dirC[0] + pl[1] * dirC[1] + pl[2] * dirC[2];
+              if (den > 1e-5) {
+                const t = (pl[3] - (pl[0] * pC[0] + pl[1] * pC[1] + pl[2] * pC[2])) / den;
+                if (t < tEx) { tEx = t; nEx = pl; }
+              }
+            }
+            if (!nEx) break;
+            pC = [pC[0] + dirC[0] * tEx, pC[1] + dirC[1] * tEx, pC[2] + dirC[2] * tEx];
+            const negN = [-nEx[0], -nEx[1], -nEx[2]];
+            const outC = this._refract(dirC, negN, ior);
+            if (outC) {
+              const outW = this._mulRot(this.rotMat, outC);
+              if (outW[1] < -0.10) {
+                exitedW = outW;
+                exitPosW = this._mulRot(this.rotMat, pC);
+                break;
+              }
+            }
+            dirC = this._reflect(dirC, negN);
+            pC = [pC[0] + dirC[0] * 0.001, pC[1] + dirC[1] * 0.001, pC[2] + dirC[2] * 0.001];
+          }
+
+          if (exitedW && exitPosW) {
+            const tFloor = (-1.16 - exitPosW[1]) / exitedW[1];
+            if (tFloor > 0 && tFloor < 10.5) {
+              const fx = exitPosW[0] + exitedW[0] * tFloor;
+              const fz = exitPosW[2] + exitedW[2] * tFloor;
+              const u = fx * 0.155 + 0.5;
+              const v = fz * 0.155 + 0.5;
+              if (u > 0.02 && u < 0.98 && v > 0.02 && v < 0.98) {
+                const ang = Math.atan2(exitedW[2], exitedW[0]);
+                const spread = 0.026 + tFloor * 0.009;
+                this.splatPosSize[count * 4 + 0] = u;
+                this.splatPosSize[count * 4 + 1] = v;
+                this.splatPosSize[count * 4 + 2] = spread;
+                this.splatPosSize[count * 4 + 3] = ang;
+
+                this.splatColor[count * 3 + 0] = bands[b].col[0];
+                this.splatColor[count * 3 + 1] = bands[b].col[1];
+                this.splatColor[count * 3 + 2] = bands[b].col[2];
+                count++;
+              }
+            }
+          }
+        }
+      }
+    }
+    this.activeSplats = count;
+  }
+}
+
+// ============================================================================
+// 2. GRAPHENE sp² HEXAGONAL MONOLAYER — VERLET + LASER CLEAVE + SELF-HEALING
+// ============================================================================
+class GrapheneSim {
+  constructor() {
+    this.tool = 'pluck'; // 'pluck' | 'laser' | 'heal'
+    this.camYaw = 0.0;
+    this.camPitch = 0.52;
+    this.buildLattice();
+  }
+
+  buildLattice() {
+    this.atoms = [];
+    this.bonds = [];
+    const rows = 15;
+    const cols = 13;
+    const a = 0.25; // C-C bond length in world units
+    const dx = a * Math.sqrt(3);
+    const dy = a * 1.5;
+
+    const grid = new Map();
+    for (let r = 0; r < rows; r++) {
+      for (let c = 0; c < cols; c++) {
+        for (let sub = 0; sub < 2; sub++) {
+          const x = (c - (cols - 1) * 0.5 + (r % 2) * 0.5) * dx;
+          const z = (r - (rows - 1) * 0.5) * dy + (sub === 1 ? a * 0.5 : -a * 0.5);
+          if (Math.abs(x) > 2.65 || Math.abs(z) > 2.35) continue;
+          const pinned = (Math.abs(x) > 2.28 || Math.abs(z) > 2.02);
+          const idx = this.atoms.length;
+          this.atoms.push({
+            x, y: 0, z,
+            vx: 0, vy: 0, vz: 0,
+            rx: x, rz: z,
+            pinned,
+            heat: 0,
+            deg: 0
+          });
+          grid.set(`${r},${c},${sub}`, idx);
+        }
+      }
+    }
+
+    // Connect nearest honeycomb neighbors (~a distance)
+    this.r0 = a;
+    for (let i = 0; i < this.atoms.length; i++) {
+      for (let j = i + 1; j < this.atoms.length; j++) {
+        const dist = Math.hypot(
+          this.atoms[i].x - this.atoms[j].x,
+          this.atoms[i].z - this.atoms[j].z
+        );
+        if (dist > a * 0.7 && dist < a * 1.32) {
+          this.bonds.push({
+            i, j,
+            r0: dist,
+            active: true,
+            strain: 0,
+            pulse: 0
+          });
+          this.atoms[i].deg++;
+          this.atoms[j].deg++;
+        }
+      }
+    }
+
+    this.atomPosBuf = new Float32Array(this.atoms.length * 3);
+    this.atomMetaBuf = new Float32Array(this.atoms.length * 4);
+    this.bondP0Buf = new Float32Array((this.bonds.length + 128) * 3);
+    this.bondP1Buf = new Float32Array((this.bonds.length + 128) * 3);
+    this.bondMetaBuf = new Float32Array((this.bonds.length + 128) * 4);
+    this.activeBondCount = this.bonds.length;
+  }
+
+  triggerRipple(cx = 0, cz = 0, amp = 0.36) {
+    for (const at of this.atoms) {
+      if (at.pinned) continue;
+      const d = Math.hypot(at.x - cx, at.z - cz);
+      const w = Math.exp(-d * d * 2.2);
+      at.vy += amp * w;
+      at.heat = Math.min(1.0, at.heat + w * 0.7);
+    }
+    for (const b of this.bonds) {
+      if (!b.active) continue;
+      const mx = 0.5 * (this.atoms[b.i].x + this.atoms[b.j].x);
+      const mz = 0.5 * (this.atoms[b.i].z + this.atoms[b.j].z);
+      if (Math.hypot(mx - cx, mz - cz) < 0.7) b.pulse = 1.0;
+    }
+  }
+
+  annealAll(audio) {
+    let healed = 0;
+    // Recompute degrees
+    for (const at of this.atoms) at.deg = 0;
+    for (const b of this.bonds) {
+      if (b.active) {
+        this.atoms[b.i].deg++;
+        this.atoms[b.j].deg++;
+      }
+    }
+    // Restore broken original bonds first if atoms are reasonably close
+    for (const b of this.bonds) {
+      if (!b.active) {
+        const ai = this.atoms[b.i], aj = this.atoms[b.j];
+        const d = Math.hypot(ai.x - aj.x, ai.y - aj.y, ai.z - aj.z);
+        if (d < this.r0 * 2.4 && ai.deg < 3 && aj.deg < 3) {
+          b.active = true;
+          b.pulse = 1.0;
+          ai.deg++; aj.deg++;
+          ai.heat = 0.9; aj.heat = 0.9;
+          healed++;
+        }
+      }
+    }
+    // Pull atoms gently toward crystal equilibrium
+    for (const at of this.atoms) {
+      if (!at.pinned) {
+        at.vx += (at.rx - at.x) * 3.0;
+        at.vz += (at.rz - at.z) * 3.0;
+      }
+    }
+    if (healed > 0 && audio) audio.annealChord();
+    return healed;
+  }
+
+  interactScreen(ndcX, ndcY, prevNdcX, prevNdcY, pv, audio, forceTool = null) {
+    const mode = forceTool || this.tool;
+    if (mode === 'heal') {
+      this.annealAll(audio);
+      return;
+    }
+
+    // Project atoms once
+    const proj = this.atoms.map(a => projectToNDC(pv, a.x, a.y, a.z));
+
+    if (mode === 'laser') {
+      // Sever covalent bonds intersected by laser stroke
+      let snapped = 0;
+      for (const b of this.bonds) {
+        if (!b.active) continue;
+        const p0 = proj[b.i], p1 = proj[b.j];
+        if (!p0 || !p1) continue;
+        const mx = 0.5 * (p0[0] + p1[0]);
+        const my = 0.5 * (p0[1] + p1[1]);
+        if (Math.hypot(mx - ndcX, my - ndcY) < 0.055) {
+          b.active = false;
+          const ai = this.atoms[b.i], aj = this.atoms[b.j];
+          ai.deg = Math.max(0, ai.deg - 1);
+          aj.deg = Math.max(0, aj.deg - 1);
+          ai.heat = 1.0; aj.heat = 1.0;
+          // Elastic recoil!
+          const dx = ai.x - aj.x, dz = ai.z - aj.z;
+          const l = Math.hypot(dx, dz) || 1;
+          if (!ai.pinned) { ai.vx += (dx / l) * 0.9; ai.vy += (Math.random() - 0.5) * 0.8; }
+          if (!aj.pinned) { aj.vx -= (dx / l) * 0.9; aj.vy += (Math.random() - 0.5) * 0.8; }
+          snapped++;
+        }
+      }
+      if (snapped > 0 && audio) audio.snapBond(ndcX);
+      return;
+    }
+
+    // Default: Pluck covalent waveguide harp!
+    const vxScreen = ndcX - prevNdcX;
+    const vyScreen = ndcY - prevNdcY;
+    let bestBond = null, bestDist = 0.095;
+
+    for (let i = 0; i < this.atoms.length; i++) {
+      const p = proj[i];
+      if (!p || this.atoms[i].pinned) continue;
+      const d = Math.hypot(p[0] - ndcX, p[1] - ndcY);
+      if (d < 0.14) {
+        const w = 1.0 - d / 0.14;
+        this.atoms[i].vy += (0.22 + Math.hypot(vxScreen, vyScreen) * 3.2) * w * (vyScreen >= 0 ? 1 : -1);
+        this.atoms[i].vx += vxScreen * 2.2 * w;
+        this.atoms[i].heat = Math.min(1.0, this.atoms[i].heat + w * 0.45);
+      }
+    }
+
+    for (const b of this.bonds) {
+      if (!b.active) continue;
+      const p0 = proj[b.i], p1 = proj[b.j];
+      if (!p0 || !p1) continue;
+      const mx = 0.5 * (p0[0] + p1[0]);
+      const my = 0.5 * (p0[1] + p1[1]);
+      const d = Math.hypot(mx - ndcX, my - ndcY);
+      if (d < bestDist) {
+        bestDist = d;
+        bestBond = b;
+      }
+    }
+
+    if (bestBond) {
+      bestBond.pulse = 1.0;
+      if (audio) {
+        audio.pluckBond(bestBond.strain, ndcX, (ndcY + 1) * 0.5);
+      }
+    }
+  }
+
+  getProjView(aspect) {
+    const r = 4.65;
+    const cx = Math.sin(this.camYaw) * Math.cos(this.camPitch) * r;
+    const cy = Math.sin(this.camPitch) * r;
+    const cz = Math.cos(this.camYaw) * Math.cos(this.camPitch) * r;
+    return makePerspectiveProjView(aspect, [cx, cy, cz], [0, -0.05, 0], 42);
+  }
+
+  update(dt, time, audio) {
+    const subSteps = 3;
+    const h = Math.min(0.022, dt) / subSteps;
+    const kSpring = 210.0;
+    const kPlanar = 4.2;
+
+    for (let step = 0; step < subSteps; step++) {
+      for (const b of this.bonds) {
+        if (!b.active) continue;
+        const ai = this.atoms[b.i];
+        const aj = this.atoms[b.j];
+        const dx = aj.x - ai.x;
+        const dy = aj.y - ai.y;
+        const dz = aj.z - ai.z;
+        const dist = Math.hypot(dx, dy, dz) || 1e-5;
+        const diff = dist - b.r0;
+        b.strain = Math.abs(diff) / b.r0;
+
+        // Extreme tear threshold under violent pull
+        if (b.strain > 0.95) {
+          b.active = false;
+          ai.heat = 1.0; aj.heat = 1.0;
+          if (audio) audio.snapBond(0);
+          continue;
+        }
+
+        const f = (kSpring * diff) / dist;
+        const fx = dx * f, fy = dy * f, fz = dz * f;
+        if (!ai.pinned) { ai.vx += fx * h; ai.vy += fy * h; ai.vz += fz * h; }
+        if (!aj.pinned) { aj.vx -= fx * h; aj.vy -= fy * h; aj.vz -= fz * h; }
+      }
+
+      for (const at of this.atoms) {
+        if (at.pinned) {
+          // Subtle ambient quantum zero-point undulation along boundary
+          at.y = Math.sin(at.x * 2.2 + time * 1.9) * Math.cos(at.z * 2.0 - time * 1.4) * 0.045;
+          continue;
+        }
+        // Soft out-of-plane drumhead restoration + viscous damping
+        at.vy += (-kPlanar * at.y) * h;
+        const damp = Math.pow(0.24, h);
+        at.vx *= damp; at.vy *= damp; at.vz *= damp;
+        at.x += at.vx * h;
+        at.y += at.vy * h;
+        at.z += at.vz * h;
+      }
+    }
+
+    // Pack GPU instance buffers
+    for (let i = 0; i < this.atoms.length; i++) {
+      const at = this.atoms[i];
+      at.heat = Math.max(0, at.heat - dt * 1.2);
+      this.atomPosBuf[i * 3 + 0] = at.x;
+      this.atomPosBuf[i * 3 + 1] = at.y;
+      this.atomPosBuf[i * 3 + 2] = at.z;
+
+      this.atomMetaBuf[i * 4 + 0] = 0.048;
+      this.atomMetaBuf[i * 4 + 1] = Math.min(1.0, at.heat + (at.deg < 3 && !at.pinned ? 0.55 : 0.0));
+      this.atomMetaBuf[i * 4 + 2] = 0;
+      this.atomMetaBuf[i * 4 + 3] = 1.0;
+    }
+
+    let bOut = 0;
+    for (let i = 0; i < this.bonds.length; i++) {
+      const b = this.bonds[i];
+      if (!b.active) continue;
+      b.pulse = Math.max(0, b.pulse - dt * 2.2);
+      const ai = this.atoms[b.i], aj = this.atoms[b.j];
+      this.bondP0Buf[bOut * 3 + 0] = ai.x;
+      this.bondP0Buf[bOut * 3 + 1] = ai.y;
+      this.bondP0Buf[bOut * 3 + 2] = ai.z;
+
+      this.bondP1Buf[bOut * 3 + 0] = aj.x;
+      this.bondP1Buf[bOut * 3 + 1] = aj.y;
+      this.bondP1Buf[bOut * 3 + 2] = aj.z;
+
+      this.bondMetaBuf[bOut * 4 + 0] = b.strain;
+      this.bondMetaBuf[bOut * 4 + 1] = 1.0;
+      this.bondMetaBuf[bOut * 4 + 2] = 0.019;
+      this.bondMetaBuf[bOut * 4 + 3] = b.pulse;
+      bOut++;
+    }
+    this.activeBondCount = bOut;
+  }
+}
+
+// ============================================================================
+// 3. FULLERENE C60 GEODESIC CAGE + ENDOHEDRAL @La ION + (6,6) NANOTUBE
+// ============================================================================
+class FullereneSim {
+  constructor() {
+    this.subMode = 'c60'; // 'c60' | 'tube'
+    this.rotYaw = 0.3;
+    this.rotPitch = 0.2;
+    this.velYaw = 0.52;
+    this.velPitch = 0.14;
+    this.buildC60();
+  }
+
+  setSubMode(mode) {
+    this.subMode = mode;
+    if (mode === 'c60') this.buildC60();
+    else this.buildNanotube();
+  }
+
+  buildC60() {
+    const phi = (1 + Math.sqrt(5)) / 2;
+    const raw = [];
+    const addEvenPerms = (a, b, c) => {
+      for (const [x, y, z] of [[a, b, c], [b, c, a], [c, a, b]]) {
+        for (const vx of (x === 0 ? [0] : [-x, x])) {
+          for (const vy of (y === 0 ? [0] : [-y, y])) {
+            for (const vz of (z === 0 ? [0] : [-z, z])) {
+              raw.push([vx, vy, vz]);
+            }
+          }
+        }
+      }
+    };
+    addEvenPerms(0, 1, 3 * phi);
+    addEvenPerms(1, 2 + phi, 2 * phi);
+    addEvenPerms(phi, 2, 2 * phi + 1);
+
+    const scale = 0.255; // Cage radius ~ 1.26 world units
+    this.atoms = raw.map(([x, y, z]) => ({
+      x: x * scale, y: y * scale, z: z * scale,
+      rx: x * scale, ry: y * scale, rz: z * scale,
+      vx: 0, vy: 0, vz: 0,
+      heat: 0
+    }));
+
+    const adj = Array.from({ length: 60 }, () => []);
+    const edges = [];
+    for (let i = 0; i < 60; i++) {
+      for (let j = i + 1; j < 60; j++) {
+        const dRaw = Math.hypot(raw[i][0] - raw[j][0], raw[i][1] - raw[j][1], raw[i][2] - raw[j][2]);
+        if (Math.abs(dRaw - 2.0) < 1e-4) {
+          adj[i].push(j);
+          adj[j].push(i);
+          edges.push([i, j, dRaw * scale]);
+        }
+      }
+    }
+
+    // Exact topological pi-bond order: 30 6:6 double bonds + 60 5:6 single bonds!
+    this.bonds = edges.map(([u, v, r0]) => {
+      let inPentagon = false;
+      for (const a of adj[u]) {
+        if (a === v) continue;
+        for (const b of adj[v]) {
+          if (b === u) continue;
+          if (adj[a].some(c => c !== u && c !== v && adj[b].includes(c))) {
+            inPentagon = true;
+          }
+        }
+      }
+      return { i: u, j: v, r0, order: inPentagon ? 1.0 : 2.0, strain: 0, pulse: 0 };
+    });
+
+    // Endohedral trapped @La ion inside C60!
+    this.ion = {
+      active: true,
+      x: 0.08, y: 0.05, z: -0.04,
+      vx: 2.35, vy: 1.75, vz: -1.55
+    };
+
+    this._allocBuffers();
+  }
+
+  buildNanotube() {
+    // (6,6) Armchair Carbon Nanotube: 13 rings x 12 atoms = 156 atoms
+    this.atoms = [];
+    this.bonds = [];
+    const rings = 13;
+    const perRing = 12;
+    const radius = 0.68;
+    const dz = 0.24;
+
+    for (let r = 0; r < rings; r++) {
+      const z = (r - (rings - 1) * 0.5) * dz;
+      const twist = (r % 2) * (Math.PI / perRing);
+      for (let k = 0; k < perRing; k++) {
+        // Pair armchair dimers around circumference
+        const baseA = (Math.floor(k / 2) / (perRing / 2)) * Math.PI * 2 + twist;
+        const offset = (k % 2 === 0 ? -0.17 : 0.17);
+        const ang = baseA + offset;
+        const x = Math.cos(ang) * radius;
+        const y = Math.sin(ang) * radius;
+        this.atoms.push({
+          x, y, z,
+          rx: x, ry: y, rz: z,
+          vx: 0, vy: 0, vz: 0,
+          heat: 0
+        });
+      }
+    }
+
+    for (let i = 0; i < this.atoms.length; i++) {
+      for (let j = i + 1; j < this.atoms.length; j++) {
+        const d = Math.hypot(
+          this.atoms[i].x - this.atoms[j].x,
+          this.atoms[i].y - this.atoms[j].y,
+          this.atoms[i].z - this.atoms[j].z
+        );
+        if (d < 0.42) {
+          this.bonds.push({
+            i, j, r0: d,
+            order: d < 0.27 ? 2.0 : 1.0,
+            strain: 0, pulse: 0
+          });
+        }
+      }
+    }
+
+    this.ion = {
+      active: true,
+      x: 0, y: 0, z: -1.3,
+      vx: 0.25, vy: -0.2, vz: 3.2
+    };
+    this._allocBuffers();
+  }
+
+  _allocBuffers() {
+    const totalAtoms = this.atoms.length + 1;
+    this.atomPosBuf = new Float32Array(totalAtoms * 3);
+    this.atomMetaBuf = new Float32Array(totalAtoms * 4);
+    this.bondP0Buf = new Float32Array(this.bonds.length * 3);
+    this.bondP1Buf = new Float32Array(this.bonds.length * 3);
+    this.bondMetaBuf = new Float32Array(this.bonds.length * 4);
+  }
+
+  kickIon(audio) {
+    const sp = 3.8;
+    const th = Math.random() * Math.PI * 2;
+    const ph = (Math.random() - 0.5) * Math.PI;
+    this.ion.vx = Math.cos(th) * Math.cos(ph) * sp;
+    this.ion.vy = Math.sin(ph) * sp;
+    this.ion.vz = Math.sin(th) * Math.cos(ph) * sp;
+    for (const b of this.bonds) {
+      if (Math.random() < 0.35) b.pulse = 0.9;
+    }
+    if (audio) audio.strikeFullerene(0.95, 0, false);
+  }
+
+  pokeCage(ndcX, ndcY, pv, audio) {
+    let hit = false;
+    for (const at of this.atoms) {
+      const wr = this._rotVec(at.x, at.y, at.z);
+      const p = projectToNDC(pv, wr[0], wr[1], wr[2]);
+      if (!p) continue;
+      const d = Math.hypot(p[0] - ndcX, p[1] - ndcY);
+      if (d < 0.24) {
+        const w = 1.0 - d / 0.24;
+        // Compress inward toward origin!
+        const l = Math.hypot(at.x, at.y, at.z) || 1;
+        at.vx -= (at.x / l) * 1.65 * w;
+        at.vy -= (at.y / l) * 1.65 * w;
+        at.vz -= (at.z / l) * 1.65 * w;
+        at.heat = Math.min(1.0, at.heat + w * 0.9);
+        hit = true;
+      }
+    }
+    if (hit && audio) audio.strikeFullerene(0.75, ndcX, false);
+  }
+
+  _rotVec(x, y, z) {
+    const cy = Math.cos(this.rotYaw), sy = Math.sin(this.rotYaw);
+    const cp = Math.cos(this.rotPitch), sp = Math.sin(this.rotPitch);
+    const x1 = cy * x + sy * sp * y + sy * cp * z;
+    const y1 = cp * y - sp * z;
+    const z1 = -sy * x + cy * sp * y + cy * cp * z;
+    return [x1, y1, z1];
+  }
+
+  getProjView(aspect) {
+    return makePerspectiveProjView(aspect, [0, 0, 4.4], [0, 0, 0], 42);
+  }
+
+  update(dt, isDragging, audio) {
+    if (!isDragging) {
+      this.rotYaw += this.velYaw * dt;
+      this.rotPitch += this.velPitch * dt;
+      this.velYaw = this.velYaw * Math.pow(0.4, dt) + 0.45 * (1 - Math.pow(0.4, dt));
+      this.velPitch = this.velPitch * Math.pow(0.2, dt);
+      this.rotPitch = Math.max(-1.1, Math.min(1.1, this.rotPitch));
+    }
+
+    const h = Math.min(0.02, dt) * 0.5;
+    for (let step = 0; step < 2; step++) {
+      // Covalent bond springs
+      for (const b of this.bonds) {
+        const ai = this.atoms[b.i], aj = this.atoms[b.j];
+        const dx = aj.x - ai.x, dy = aj.y - ai.y, dz = aj.z - ai.z;
+        const d = Math.hypot(dx, dy, dz) || 1e-5;
+        const diff = d - b.r0;
+        b.strain = Math.abs(diff) / b.r0;
+        const f = (165.0 * diff) / d;
+        ai.vx += dx * f * h; ai.vy += dy * f * h; ai.vz += dz * f * h;
+        aj.vx -= dx * f * h; aj.vy -= dy * f * h; aj.vz -= dz * f * h;
+      }
+
+      // Soft polyhedral shape-memory restoration so C60 springs back after squishing!
+      for (const at of this.atoms) {
+        at.vx += (at.rx - at.x) * 28.0 * h;
+        at.vy += (at.ry - at.y) * 28.0 * h;
+        at.vz += (at.rz - at.z) * 28.0 * h;
+        const damp = Math.pow(0.18, h);
+        at.vx *= damp; at.vy *= damp; at.vz *= damp;
+        at.x += at.vx * h; at.y += at.vy * h; at.z += at.vz * h;
+      }
+
+      // Endohedral trapped @La ion physics!
+      const ion = this.ion;
+      ion.x += ion.vx * h;
+      ion.y += ion.vy * h;
+      ion.z += ion.vz * h;
+
+      if (this.subMode === 'c60') {
+        const rIon = Math.hypot(ion.x, ion.y, ion.z);
+        const wallR = 0.96;
+        if (rIon > wallR) {
+          const nx = ion.x / rIon, ny = ion.y / rIon, nz = ion.z / rIon;
+          ion.x = nx * wallR; ion.y = ny * wallR; ion.z = nz * wallR;
+          const vn = ion.vx * nx + ion.vy * ny + ion.vz * nz;
+          if (vn > 0) {
+            ion.vx -= 1.98 * vn * nx;
+            ion.vy -= 1.98 * vn * ny;
+            ion.vz -= 1.98 * vn * nz;
+            // Maintain lively thermal bounce speed
+            const sp = Math.hypot(ion.vx, ion.vy, ion.vz) || 1;
+            if (sp < 2.2) { ion.vx *= 2.4 / sp; ion.vy *= 2.4 / sp; ion.vz *= 2.4 / sp; }
+
+            // Deform and light up struck C60 face!
+            for (const at of this.atoms) {
+              const dHit = Math.hypot(at.x - nx * 1.25, at.y - ny * 1.25, at.z - nz * 1.25);
+              if (dHit < 0.68) {
+                const w = 1.0 - dHit / 0.68;
+                at.vx += nx * 1.4 * w;
+                at.vy += ny * 1.4 * w;
+                at.vz += nz * 1.4 * w;
+                at.heat = Math.min(1.0, at.heat + w);
+              }
+            }
+            const wHit = this._rotVec(ion.x, ion.y, ion.z);
+            if (audio) audio.strikeFullerene(Math.min(1.0, vn * 0.32), wHit[0] * 0.7, true);
+          }
+        }
+      } else {
+        // Nanotube cylindrical channel bounce
+        const rXY = Math.hypot(ion.x, ion.y);
+        if (rXY > 0.42) {
+          const nx = ion.x / rXY, ny = ion.y / rXY;
+          ion.x = nx * 0.42; ion.y = ny * 0.42;
+          const vn = ion.vx * nx + ion.vy * ny;
+          if (vn > 0) { ion.vx -= 2.0 * vn * nx; ion.vy -= 2.0 * vn * ny; }
+        }
+        if (Math.abs(ion.z) > 1.48) {
+          ion.z = Math.sign(ion.z) * 1.48;
+          ion.vz *= -1.0;
+          if (audio) audio.strikeFullerene(0.7, ion.z * 0.4, true);
+        }
+        for (const at of this.atoms) {
+          if (Math.abs(at.z - ion.z) < 0.26) {
+            at.heat = Math.min(1.0, at.heat + 0.35);
+          }
+        }
+      }
+    }
+
+    // Transform rotated coordinates into GPU buffers
+    for (let i = 0; i < this.atoms.length; i++) {
+      const at = this.atoms[i];
+      at.heat = Math.max(0, at.heat - dt * 1.5);
+      const w = this._rotVec(at.x, at.y, at.z);
+      this.atomPosBuf[i * 3 + 0] = w[0];
+      this.atomPosBuf[i * 3 + 1] = w[1];
+      this.atomPosBuf[i * 3 + 2] = w[2];
+
+      this.atomMetaBuf[i * 4 + 0] = 0.068;
+      this.atomMetaBuf[i * 4 + 1] = at.heat;
+      this.atomMetaBuf[i * 4 + 2] = 0;
+      this.atomMetaBuf[i * 4 + 3] = 1.0;
+    }
+
+    // Trapped ion at last slot
+    const wi = this._rotVec(this.ion.x, this.ion.y, this.ion.z);
+    const idxIon = this.atoms.length;
+    this.atomPosBuf[idxIon * 3 + 0] = wi[0];
+    this.atomPosBuf[idxIon * 3 + 1] = wi[1];
+    this.atomPosBuf[idxIon * 3 + 2] = wi[2];
+    this.atomMetaBuf[idxIon * 4 + 0] = 0.145;
+    this.atomMetaBuf[idxIon * 4 + 1] = 1.0;
+    this.atomMetaBuf[idxIon * 4 + 2] = 1; // Solar gold endohedral ion
+    this.atomMetaBuf[idxIon * 4 + 3] = 1.0;
+
+    for (let i = 0; i < this.bonds.length; i++) {
+      const b = this.bonds[i];
+      b.pulse = Math.max(0, b.pulse - dt * 1.8);
+      const i0 = b.i * 3, i1 = b.j * 3;
+      this.bondP0Buf[i * 3 + 0] = this.atomPosBuf[i0 + 0];
+      this.bondP0Buf[i * 3 + 1] = this.atomPosBuf[i0 + 1];
+      this.bondP0Buf[i * 3 + 2] = this.atomPosBuf[i0 + 2];
+
+      this.bondP1Buf[i * 3 + 0] = this.atomPosBuf[i1 + 0];
+      this.bondP1Buf[i * 3 + 1] = this.atomPosBuf[i1 + 1];
+      this.bondP1Buf[i * 3 + 2] = this.atomPosBuf[i1 + 2];
+
+      this.bondMetaBuf[i * 4 + 0] = b.strain + (this.atoms[b.i].heat + this.atoms[b.j].heat) * 0.22;
+      this.bondMetaBuf[i * 4 + 1] = b.order;
+      this.bondMetaBuf[i * 4 + 2] = b.order > 1.5 ? 0.032 : 0.021;
+      this.bondMetaBuf[i * 4 + 3] = b.pulse;
+    }
+  }
+}
+
+// ============================================================================
+// 4. STARFORGE TRIPLE-ALPHA (3 ⁴He → ⁸Be* + ⁴He → ¹²C + 7.65 MeV γ)
+// ============================================================================
+class StarforgeSim {
+  constructor() {
+    this.count = 175;
+    this.c12Forged = 0;
+    this.crush = 0.0;
+    this.targetCrush = 0.0;
+    this.shocks = Array.from({ length: 8 }, () => [0.5, 0.5, 0.0, 0.0]);
+    this.shockUniform = new Float32Array(8 * 4);
+    this.shockPtr = 0;
+
+    this.particles = [];
+    for (let i = 0; i < this.count; i++) {
+      this.particles.push(this._spawnHelium());
+    }
+    this.atomPosBuf = new Float32Array(this.count * 3);
+    this.atomMetaBuf = new Float32Array(this.count * 4);
+  }
+
+  _spawnHelium() {
+    const r = 0.32 + Math.random() * 1.45;
+    const th = Math.random() * Math.PI * 2;
+    const inc = (Math.random() - 0.5) * 0.55;
+    const vOrb = 1.05 / Math.sqrt(r + 0.18);
+    return {
+      x: Math.cos(th) * r,
+      y: Math.sin(th) * Math.sin(inc) * r + (Math.random() - 0.5) * 0.25,
+      z: Math.sin(th) * Math.cos(inc) * r,
+      vx: -Math.sin(th) * vOrb,
+      vy: (Math.random() - 0.5) * 0.35,
+      vz: Math.cos(th) * vOrb,
+      kind: 1, // 1 = 4He, 2 = 8Be dimer, 3 = forged 12C
+      ttl: 0,
+      age: 0,
+      active: true
+    };
+  }
+
+  spawnShock(uvX, uvY, intensity = 1.0) {
+    this.shocks[this.shockPtr] = [uvX, uvY, 0.02, intensity];
+    this.shockPtr = (this.shockPtr + 1) % 8;
+  }
+
+  supernovaBurst(audio) {
+    this.spawnShock(0.5, 0.5, 1.5);
+    let burstCount = 0;
+    for (const p of this.particles) {
+      if (p.kind === 1 && burstCount < 14 && Math.hypot(p.x, p.y, p.z) < 0.85) {
+        p.kind = 3;
+        p.age = 0;
+        const r = Math.hypot(p.x, p.y, p.z) || 0.2;
+        p.vx = (p.x / r) * 2.2;
+        p.vy = (p.y / r) * 2.2;
+        p.vz = (p.z / r) * 2.2;
+        this.c12Forged++;
+        burstCount++;
+      }
+    }
+    if (audio) audio.fusionFlash(0, 1.2);
+  }
+
+  getProjView(aspect) {
+    return makePerspectiveProjView(aspect, [0, 0.75, 4.35], [0, 0, 0], 42);
+  }
+
+  update(dt, aspect, audio) {
+    this.crush += (this.targetCrush - this.crush) * (1 - Math.pow(0.01, dt));
+    if (audio) audio.setStarCrush(this.crush);
+
+    const pv = this.getProjView(aspect);
+    const G = 1.25 + this.crush * 3.8;
+    const h = Math.min(0.025, dt);
+
+    for (let i = 0; i < this.particles.length; i++) {
+      const p = this.particles[i];
+      p.age += h;
+
+      if (p.kind === 2) {
+        // Unstable 8Be decays back to 4He if not struck in time!
+        p.ttl -= h;
+        if (p.ttl <= 0) {
+          p.kind = 1;
+        }
+      } else if (p.kind === 3 && p.age > 7.5) {
+        // Recycle old outer-shell 12C back into fresh fuel stream at outer rim
+        Object.assign(p, this._spawnHelium());
+      }
+
+      const r2 = p.x * p.x + p.y * p.y + p.z * p.z + 0.065;
+      const r = Math.sqrt(r2);
+
+      if (p.kind === 3) {
+        // Newly forged 12C coasts smoothly into wide stellar nebula shell
+        const targetR = 1.65;
+        const pull = (targetR - r) * 0.9;
+        p.vx += (p.x / r) * pull * h - p.z * 0.35 * h;
+        p.vz += (p.z / r) * pull * h + p.x * 0.35 * h;
+        p.vx *= 0.988; p.vy *= 0.988; p.vz *= 0.988;
+      } else {
+        // Gravitational acceleration toward roaring core
+        const acc = -G / r2;
+        p.vx += (p.x / r) * acc * h;
+        p.vy += (p.y / r) * acc * h - p.y * 0.6 * h;
+        p.vz += (p.z / r) * acc * h;
+
+        // Extra inward crush drag when user holds Gravity Crush
+        if (this.crush > 0.05 && r > 0.22) {
+          p.vx -= p.x * this.crush * 1.35 * h;
+          p.vy -= p.y * this.crush * 1.35 * h;
+          p.vz -= p.z * this.crush * 1.35 * h;
+        }
+        // Prevent infinite slingshot escape
+        if (r > 2.35) {
+          p.vx *= 0.92; p.vy *= 0.92; p.vz *= 0.92;
+        }
+      }
+
+      p.x += p.vx * h;
+      p.y += p.vy * h;
+      p.z += p.vz * h;
+    }
+
+    // Pairwise Triple-Alpha nuclear reaction kinetics inside the hot core!
+    const reactRadius = 0.085 + this.crush * 0.075;
+    const coreZone = 0.55 + this.crush * 0.32;
+
+    for (let i = 0; i < this.particles.length; i++) {
+      const a = this.particles[i];
+      if (a.kind === 3) continue;
+      const ra = Math.hypot(a.x, a.y, a.z);
+      if (ra > coreZone) continue;
+
+      for (let j = i + 1; j < this.particles.length; j++) {
+        const b = this.particles[j];
+        if (b.kind === 3) continue;
+        const d = Math.hypot(a.x - b.x, a.y - b.y, a.z - b.z);
+        if (d < reactRadius) {
+          if (a.kind === 1 && b.kind === 1) {
+            // 4He + 4He -> unstable 8Be!
+            a.kind = 2;
+            a.ttl = 0.75 + this.crush * 0.55;
+            Object.assign(b, this._spawnHelium());
+            break;
+          } else if ((a.kind === 2 && b.kind === 1) || (a.kind === 1 && b.kind === 2)) {
+            // 8Be + 4He -> 12C* (7.65 MeV Hoyle state!) -> Stable CARBON-12!!
+            const survivor = a.kind === 2 ? a : b;
+            const consumed = a.kind === 2 ? b : a;
+            survivor.kind = 3;
+            survivor.age = 0;
+            const rs = Math.hypot(survivor.x, survivor.y, survivor.z) || 0.15;
+            survivor.vx = (survivor.x / rs) * 1.85;
+            survivor.vy = (survivor.y / rs) * 1.35;
+            survivor.vz = (survivor.z / rs) * 1.85;
+
+            Object.assign(consumed, this._spawnHelium());
+            this.c12Forged++;
+
+            const ndc = projectToNDC(pv, survivor.x, survivor.y, survivor.z);
+            const sx = ndc ? (ndc[0] * 0.5 + 0.5) : 0.5;
+            const sy = ndc ? (ndc[1] * 0.5 + 0.5) : 0.5;
+            this.spawnShock(sx, sy, 0.95);
+            if (audio) audio.fusionFlash((sx - 0.5) * 1.6, 0.85);
+            break;
+          }
+        }
+      }
+    }
+
+    // Advance shockwaves
+    for (let i = 0; i < 8; i++) {
+      const sh = this.shocks[i];
+      if (sh[3] > 0.001) {
+        sh[2] += dt * 1.15;
+        sh[3] = Math.max(0, sh[3] - dt * 1.35);
+      }
+      this.shockUniform[i * 4 + 0] = sh[0];
+      this.shockUniform[i * 4 + 1] = sh[1];
+      this.shockUniform[i * 4 + 2] = sh[2];
+      this.shockUniform[i * 4 + 3] = sh[3];
+    }
+
+    // Pack instance buffers
+    for (let i = 0; i < this.particles.length; i++) {
+      const p = this.particles[i];
+      this.atomPosBuf[i * 3 + 0] = p.x;
+      this.atomPosBuf[i * 3 + 1] = p.y;
+      this.atomPosBuf[i * 3 + 2] = p.z;
+
+      const rad = p.kind === 1 ? 0.044 : p.kind === 2 ? 0.068 : 0.088;
+      this.atomMetaBuf[i * 4 + 0] = rad;
+      this.atomMetaBuf[i * 4 + 1] = p.kind === 3 ? 1.0 : 0.5;
+      this.atomMetaBuf[i * 4 + 2] = p.kind;
+      this.atomMetaBuf[i * 4 + 3] = 1.0;
+    }
+
+    return pv;
+  }
+}
+
+
+// Main WebGL2 Multi-Pass Engine, GPGPU Compute, UI & MediaRecorder Controller
+
+(function () {
+  const PHASE_INFO = [
+    {
+      name: 'DIAMOND PRISM',
+      hybrid: 'sp³ TETRAHEDRAL CRYSTAL',
+      telemetry: '15.0 GPa · 1,800 K · n = 2.417',
+      color: '#7dd3fc',
+      pt: [0.36, 0.18], // x = T, y = P (top = high P)
+      ptLabel: '15 GPa · 1.8kK',
+      hint: 'Drag crystal to refract · Shift+Drag steers key beam · Click crystal to ring eigenmodes',
+      prims: '32 Half-Spaces · 7λ',
+      passes: 'Analytic Hull + Caustic FBO',
+      audioDesc: '4-Mode Crystal Bar + Velvet IR',
+      eq: 'n(λ) = 2.378 + 0.0138/λ² · 5-bounce TIR + Fresnel R(θ)'
+    },
+    {
+      name: 'GRAPHENE SHEET',
+      hybrid: 'sp² HONEYCOMB MONOLAYER',
+      telemetry: '100 kPa · 300 K · d = 1.42 Å',
+      color: '#38bdf8',
+      pt: [0.28, 0.56],
+      ptLabel: '1 atm · 300 K',
+      hint: 'Sweep across bonds to pluck quantum harp · Switch to LASER CUT to cleave bonds, ANNEAL to self-heal',
+      prims: '330 Atoms · ~470 σ-Bonds',
+      passes: '3× Substep Verlet + Instanced 3D',
+      audioDesc: 'Polyphonic F-Lydian Waveguide',
+      eq: 'F_ij = -k(|r_ij| - r₀)r̂_ij · Dynamic σ-bond cleavage & radical healing'
+    },
+    {
+      name: 'BUCKMINSTER C₆₀',
+      hybrid: 'TRUNCATED ICOSAHEDRON CAGE',
+      telemetry: '10⁻³ Pa · 2,400 K · I_h Symmetry',
+      color: '#fbbf24',
+      pt: [0.54, 0.84],
+      ptLabel: 'Vacuum · 2.4kK',
+      hint: 'Drag to spin · Click cage to compress icosahedral truss · Watch @La endohedral ion ricochet inside',
+      prims: '60 C (30 C=C, 60 C–C) + @La',
+      passes: 'Golden-Ratio Graph + Soft Truss',
+      audioDesc: '1 : 2 : 2.997 Geodesic Handpan',
+      eq: 'V = 60, E = 90, F = 32 (12 C₅ + 20 C₆) · Euler V - E + F = 2'
+    },
+    {
+      name: 'ORGANIC BIOS',
+      hybrid: 'C·H·N·O MORPHOGENETIC LIFE',
+      telemetry: '101 kPa · 310 K · 65,536 GPU Agents',
+      color: '#34d399',
+      pt: [0.24, 0.52],
+      ptLabel: '310 K · Habitable',
+      hint: 'Move cursor to lure living filaments · Click to scatter · Type ANY word below to grow living letters',
+      prims: '65,536 Autonomous GPU Agents',
+      passes: 'Ping-Pong FBO + 3×3 Reaction-Diff',
+      audioDesc: 'Evolving Bio-Pad + Chemotaxis Grains',
+      eq: '∂C/∂t = D∇²C - λC + ∑δ(x - x_k) · 3-sensor chemotactic steering'
+    },
+    {
+      name: 'STARFORGE CORE',
+      hybrid: 'TRIPLE-ALPHA NUCLEOSYNTHESIS',
+      telemetry: '10¹⁴ Pa · 1.2×10⁸ K · 7.65 MeV Hoyle',
+      color: '#f472b6',
+      pt: [0.90, 0.14],
+      ptLabel: '10⁸ K · Red Giant',
+      hint: 'Press & hold anywhere (or HOLD CRUSH) to compress stellar core and ignite runaway ¹²C fusion!',
+      prims: '175 Nuclei + Lensed Plasma',
+      passes: 'Schwarzschild Lens + 3α Kinetics',
+      audioDesc: 'Sub-Bass Core + Hoyle Gamma Chimes',
+      eq: '⁴He + ⁴He ⇌ ⁸Be* , ⁸Be* + ⁴He → ¹²C* (7.65 MeV) → ¹²C + 2γ'
+    }
+  ];
+
+  const canvas = document.getElementById('glCanvas');
+  const gl = canvas.getContext('webgl2', {
+    alpha: false,
+    antialias: true,
+    depth: true,
+    powerPreference: 'high-performance',
+    preserveDrawingBuffer: false
+  });
+
+  if (!gl) {
+    document.body.innerHTML = '<div style="padding:32px;color:#fff;font-family:sans-serif">WebGL2 is required to view this interactive simulation.</div>';
+    return;
+  }
+
+  gl.getExtension('EXT_color_buffer_float');
+  gl.getExtension('OES_texture_float_linear');
+
+  // Compile & link helpers
+  function compileShader(type, src) {
+    const s = gl.createShader(type);
+    gl.shaderSource(s, src);
+    gl.compileShader(s);
+    if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) {
+      console.error('Shader compile error:', gl.getShaderInfoLog(s), src);
+    }
+    return s;
+  }
+
+  function createProgram(vsSrc, fsSrc) {
+    const p = gl.createProgram();
+    const vs = compileShader(gl.VERTEX_SHADER, vsSrc);
+    const fs = compileShader(gl.FRAGMENT_SHADER, fsSrc);
+    gl.attachShader(p, vs);
+    gl.attachShader(p, fs);
+    gl.linkProgram(p);
+    if (!gl.getProgramParameter(p, gl.LINK_STATUS)) {
+      console.error('Program link error:', gl.getProgramInfoLog(p));
+    }
+    return p;
+  }
+
+  // Build all GPU shader programs
+  const progDiamond = createProgram(SHADERS.fullscreenVert, SHADERS.diamondFrag);
+  const progCaustic = createProgram(SHADERS.causticVert, SHADERS.causticFrag);
+  const progLatticeBg = createProgram(SHADERS.fullscreenVert, SHADERS.latticeBgFrag);
+  const progBond = createProgram(SHADERS.bondVert, SHADERS.bondFrag);
+  const progAtom = createProgram(SHADERS.atomVert, SHADERS.atomFrag);
+  const progBiosAgent = createProgram(SHADERS.fullscreenVert, SHADERS.biosAgentUpdateFrag);
+  const progBiosDeposit = createProgram(SHADERS.biosDepositVert, SHADERS.biosDepositFrag);
+  const progBiosDiffuse = createProgram(SHADERS.fullscreenVert, SHADERS.biosDiffuseFrag);
+  const progBiosDisplay = createProgram(SHADERS.fullscreenVert, SHADERS.biosDisplayFrag);
+  const progStarforge = createProgram(SHADERS.fullscreenVert, SHADERS.starforgeFrag);
+
+  // Empty VAO for attribute-less gl_VertexID passes
+  const emptyVao = gl.createVertexArray();
+
+  // =========================================================================
+  // GPU BUFFERS & VAOs FOR INSTANCED CAUSTICS, BONDS & SPHERE ATOMS
+  // =========================================================================
+  const audio = new CarbonAudioEngine();
+  const diamondSim = new DiamondOpticsSim();
+  const grapheneSim = new GrapheneSim();
+  const fullereneSim = new FullereneSim();
+  const starforgeSim = new StarforgeSim();
+
+  // Shared [-1..1]^2 unit quad
+  const unitQuadCentered = new Float32Array([
+    -1, -1,  1, -1, -1,  1,
+    -1,  1,  1, -1,  1,  1
+  ]);
+  // Bond quad: x in [-1, 1], y in [0, 1]
+  const unitQuadBond = new Float32Array([
+    -1, 0,  1, 0, -1, 1,
+    -1, 1,  1, 0,  1, 1
+  ]);
+
+  const quadCenteredBuf = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, quadCenteredBuf);
+  gl.bufferData(gl.ARRAY_BUFFER, unitQuadCentered, gl.STATIC_DRAW);
+
+  const quadBondBuf = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, quadBondBuf);
+  gl.bufferData(gl.ARRAY_BUFFER, unitQuadBond, gl.STATIC_DRAW);
+
+  // 1. Caustic FBO (256x256 RGBA8) + Instanced Splat VAO
+  const CAUSTIC_RES = 256;
+  const causticTex = gl.createTexture();
+  gl.bindTexture(gl.TEXTURE_2D, causticTex);
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, CAUSTIC_RES, CAUSTIC_RES, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+
+  const causticFbo = gl.createFramebuffer();
+  gl.bindFramebuffer(gl.FRAMEBUFFER, causticFbo);
+  gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, causticTex, 0);
+
+  const causticVao = gl.createVertexArray();
+  gl.bindVertexArray(causticVao);
+  gl.bindBuffer(gl.ARRAY_BUFFER, quadCenteredBuf);
+  gl.enableVertexAttribArray(0);
+  gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
+
+  const causticPosBuf = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, causticPosBuf);
+  gl.bufferData(gl.ARRAY_BUFFER, diamondSim.splatPosSize.byteLength, gl.DYNAMIC_DRAW);
+  gl.enableVertexAttribArray(1);
+  gl.vertexAttribPointer(1, 4, gl.FLOAT, false, 0, 0);
+  gl.vertexAttribDivisor(1, 1);
+
+  const causticColBuf = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, causticColBuf);
+  gl.bufferData(gl.ARRAY_BUFFER, diamondSim.splatColor.byteLength, gl.DYNAMIC_DRAW);
+  gl.enableVertexAttribArray(2);
+  gl.vertexAttribPointer(2, 3, gl.FLOAT, false, 0, 0);
+  gl.vertexAttribDivisor(2, 1);
+
+  // 2. Instanced Bond VAO (up to 1024 bonds)
+  const MAX_BONDS = 1024;
+  const bondVao = gl.createVertexArray();
+  gl.bindVertexArray(bondVao);
+  gl.bindBuffer(gl.ARRAY_BUFFER, quadBondBuf);
+  gl.enableVertexAttribArray(0);
+  gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
+
+  const bondP0GlBuf = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, bondP0GlBuf);
+  gl.bufferData(gl.ARRAY_BUFFER, MAX_BONDS * 12, gl.DYNAMIC_DRAW);
+  gl.enableVertexAttribArray(1);
+  gl.vertexAttribPointer(1, 3, gl.FLOAT, false, 0, 0);
+  gl.vertexAttribDivisor(1, 1);
+
+  const bondP1GlBuf = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, bondP1GlBuf);
+  gl.bufferData(gl.ARRAY_BUFFER, MAX_BONDS * 12, gl.DYNAMIC_DRAW);
+  gl.enableVertexAttribArray(2);
+  gl.vertexAttribPointer(2, 3, gl.FLOAT, false, 0, 0);
+  gl.vertexAttribDivisor(2, 1);
+
+  const bondMetaGlBuf = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, bondMetaGlBuf);
+  gl.bufferData(gl.ARRAY_BUFFER, MAX_BONDS * 16, gl.DYNAMIC_DRAW);
+  gl.enableVertexAttribArray(3);
+  gl.vertexAttribPointer(3, 4, gl.FLOAT, false, 0, 0);
+  gl.vertexAttribDivisor(3, 1);
+
+  // 3. Instanced Atom Sphere VAO (up to 1024 atoms)
+  const MAX_ATOMS = 1024;
+  const atomVao = gl.createVertexArray();
+  gl.bindVertexArray(atomVao);
+  gl.bindBuffer(gl.ARRAY_BUFFER, quadCenteredBuf);
+  gl.enableVertexAttribArray(0);
+  gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
+
+  const atomPosGlBuf = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, atomPosGlBuf);
+  gl.bufferData(gl.ARRAY_BUFFER, MAX_ATOMS * 12, gl.DYNAMIC_DRAW);
+  gl.enableVertexAttribArray(1);
+  gl.vertexAttribPointer(1, 3, gl.FLOAT, false, 0, 0);
+  gl.vertexAttribDivisor(1, 1);
+
+  const atomMetaGlBuf = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, atomMetaGlBuf);
+  gl.bufferData(gl.ARRAY_BUFFER, MAX_ATOMS * 16, gl.DYNAMIC_DRAW);
+  gl.enableVertexAttribArray(2);
+  gl.vertexAttribPointer(2, 4, gl.FLOAT, false, 0, 0);
+  gl.vertexAttribDivisor(2, 1);
+
+  gl.bindVertexArray(null);
+
+  // =========================================================================
+  // PHASE 3 (BIOS): 65,536-AGENT GPGPU PING-PONG FBOs + LIVE TEXT FIELD
+  // =========================================================================
+  const AGENT_GRID = 256; // 256 x 256 = 65,536 autonomous living agents
+  const TRAIL_W = 512;
+  const TRAIL_H = 288;
+
+  const initAgents = new Float32Array(AGENT_GRID * AGENT_GRID * 4);
+  for (let i = 0; i < AGENT_GRID * AGENT_GRID; i++) {
+    const a = Math.random() * Math.PI * 2;
+    const r = Math.sqrt(Math.random()) * 0.38;
+    initAgents[i * 4 + 0] = 0.5 + Math.cos(a) * r * 0.6;
+    initAgents[i * 4 + 1] = 0.5 + Math.sin(a) * r;
+    initAgents[i * 4 + 2] = a + Math.PI;
+    initAgents[i * 4 + 3] = (i % 5 === 0) ? 1.0 : 0.0; // Two symbiotic species
+  }
+
+  function createAgentFBO(initialData) {
+    const tex = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, tex);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA32F, AGENT_GRID, AGENT_GRID, 0, gl.RGBA, gl.FLOAT, initialData);
+
+    const fbo = gl.createFramebuffer();
+    gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, tex, 0);
+    if (gl.checkFramebufferStatus(gl.FRAMEBUFFER) !== gl.FRAMEBUFFER_COMPLETE) {
+      // Fallback to RGBA16F on mobile GPUs if needed
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA16F, AGENT_GRID, AGENT_GRID, 0, gl.RGBA, gl.FLOAT, initialData);
+    }
+    return { tex, fbo };
+  }
+
+  function createTrailFBO() {
+    const tex = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, tex);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, TRAIL_W, TRAIL_H, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+
+    const fbo = gl.createFramebuffer();
+    gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, tex, 0);
+    gl.clearColor(0, 0, 0, 1);
+    gl.clear(gl.COLOR_BUFFER_BIT);
+    return { tex, fbo };
+  }
+
+  let agentPing = createAgentFBO(initAgents);
+  let agentPong = createAgentFBO(initAgents);
+  let trailPing = createTrailFBO();
+  let trailPong = createTrailFBO();
+  gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+
+  // Offscreen 2D Canvas -> WebGL Texture for Live Morphogenetic Text Inscription!
+  const textCanvas = document.createElement('canvas');
+  textCanvas.width = 512;
+  textCanvas.height = 288;
+  const textCtx = textCanvas.getContext('2d');
+  const biosTextTex = gl.createTexture();
+
+  let currentBiosWord = 'CARBON';
+  let biosTextStrength = 1.0;
+
+  function updateBiosTextTexture(word) {
+    currentBiosWord = word;
+    textCtx.fillStyle = '#000000';
+    textCtx.fillRect(0, 0, 512, 288);
+
+    const clean = (word || '').trim().toUpperCase();
+    if (!clean || clean === 'WILD') {
+      biosTextStrength = 0.0;
+    } else {
+      biosTextStrength = 1.0;
+      const len = clean.length;
+      const fontSize = Math.max(42, Math.min(108, Math.floor(430 / Math.max(3.6, len * 0.72))));
+      textCtx.save();
+      textCtx.font = `900 ${fontSize}px -apple-system, BlinkMacSystemFont, "Inter", sans-serif`;
+      textCtx.textAlign = 'center';
+      textCtx.textBaseline = 'middle';
+
+      // Soft outer chemotactic gradient halo so distant agents sense the letters!
+      textCtx.shadowColor = '#ffffff';
+      textCtx.shadowBlur = 24;
+      textCtx.fillStyle = 'rgba(255,255,255,0.65)';
+      textCtx.fillText(clean, 256, 144);
+
+      // Crisp inner nutrient core
+      textCtx.shadowBlur = 4;
+      textCtx.fillStyle = '#ffffff';
+      textCtx.fillText(clean, 256, 144);
+      textCtx.restore();
+    }
+
+    gl.bindTexture(gl.TEXTURE_2D, biosTextTex);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, textCanvas);
+  }
+
+  updateBiosTextTexture('CARBON');
+
+  // Pre-warm Bios simulation 25 steps so if user jumps straight to Phase 3 it's already lush!
+  function stepBiosGPU(timeVal, pointerUV, pointerAct) {
+    gl.disable(gl.DEPTH_TEST);
+    gl.disable(gl.BLEND);
+    gl.bindVertexArray(emptyVao);
+
+    // 1. Update 65,536 agent positions/headings
+    gl.bindFramebuffer(gl.FRAMEBUFFER, agentPong.fbo);
+    gl.viewport(0, 0, AGENT_GRID, AGENT_GRID);
+    gl.useProgram(progBiosAgent);
+
+    gl.activeTexture(gl.TEXTURE0);
+    gl.bindTexture(gl.TEXTURE_2D, agentPing.tex);
+    gl.uniform1i(gl.getUniformLocation(progBiosAgent, 'uAgentTex'), 0);
+
+    gl.activeTexture(gl.TEXTURE1);
+    gl.bindTexture(gl.TEXTURE_2D, trailPing.tex);
+    gl.uniform1i(gl.getUniformLocation(progBiosAgent, 'uTrailTex'), 1);
+
+    gl.activeTexture(gl.TEXTURE2);
+    gl.bindTexture(gl.TEXTURE_2D, biosTextTex);
+    gl.uniform1i(gl.getUniformLocation(progBiosAgent, 'uTextTex'), 2);
+
+    gl.uniform2f(gl.getUniformLocation(progBiosAgent, 'uWorldRes'), canvas.width || 1280, canvas.height || 720);
+    gl.uniform1f(gl.getUniformLocation(progBiosAgent, 'uTime'), timeVal);
+    gl.uniform2f(gl.getUniformLocation(progBiosAgent, 'uPointer'), pointerUV[0], pointerUV[1]);
+    gl.uniform1f(gl.getUniformLocation(progBiosAgent, 'uPointerAct'), pointerAct);
+    gl.uniform1f(gl.getUniformLocation(progBiosAgent, 'uTextStrength'), biosTextStrength);
+    gl.drawArrays(gl.TRIANGLES, 0, 3);
+
+    [agentPing, agentPong] = [agentPong, agentPing];
+
+    // 2. Deposit pheromone trails into trailPing
+    gl.bindFramebuffer(gl.FRAMEBUFFER, trailPing.fbo);
+    gl.viewport(0, 0, TRAIL_W, TRAIL_H);
+    gl.enable(gl.BLEND);
+    gl.blendFunc(gl.ONE, gl.ONE);
+    gl.useProgram(progBiosDeposit);
+    gl.activeTexture(gl.TEXTURE0);
+    gl.bindTexture(gl.TEXTURE_2D, agentPing.tex);
+    gl.uniform1i(gl.getUniformLocation(progBiosDeposit, 'uAgentTex'), 0);
+    gl.uniform1i(gl.getUniformLocation(progBiosDeposit, 'uGridSize'), AGENT_GRID);
+    gl.drawArrays(gl.POINTS, 0, AGENT_GRID * AGENT_GRID);
+    gl.disable(gl.BLEND);
+
+    // 3. Diffuse & decay trailPing -> trailPong
+    gl.bindFramebuffer(gl.FRAMEBUFFER, trailPong.fbo);
+    gl.viewport(0, 0, TRAIL_W, TRAIL_H);
+    gl.useProgram(progBiosDiffuse);
+    gl.activeTexture(gl.TEXTURE0);
+    gl.bindTexture(gl.TEXTURE_2D, trailPing.tex);
+    gl.uniform1i(gl.getUniformLocation(progBiosDiffuse, 'uTrailTex'), 0);
+    gl.activeTexture(gl.TEXTURE1);
+    gl.bindTexture(gl.TEXTURE_2D, biosTextTex);
+    gl.uniform1i(gl.getUniformLocation(progBiosDiffuse, 'uTextTex'), 1);
+    gl.uniform2f(gl.getUniformLocation(progBiosDiffuse, 'uTexel'), 1 / TRAIL_W, 1 / TRAIL_H);
+    gl.uniform1f(gl.getUniformLocation(progBiosDiffuse, 'uTextStrength'), biosTextStrength);
+    gl.drawArrays(gl.TRIANGLES, 0, 3);
+
+    [trailPing, trailPong] = [trailPong, trailPing];
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+  }
+
+  for (let w = 0; w < 35; w++) {
+    stepBiosGPU(w * 0.016, [0.5, 0.5], 0.0);
+  }
+
+  // =========================================================================
+  // UI STATE, AUTO-TOUR DIRECTOR & INTERACTIVE CONTROLS
+  // =========================================================================
+  let currentPhase = 0;
+  let phaseFlash = 0.0;
+  let autoTour = true;
+  let phaseTimer = 0.0;
+  const TOUR_DURATION = 8.5; // seconds per allotrope during hands-free showcase
+
+  let xrayOpen = false;
+  let pointerDown = false;
+  let pointerUV = [0.5, 0.5];
+  let prevPointerUV = [0.5, 0.5];
+  let biosScatterTimer = 0.0;
+
+  // DOM Elements
+  const elPhaseDot = document.getElementById('phaseDot');
+  const elPhaseHybrid = document.getElementById('phaseHybrid');
+  const elPhaseTitle = document.getElementById('phaseTitle');
+  const elPhaseTelemetry = document.getElementById('phaseTelemetry');
+  const elGestureHint = document.getElementById('gestureHint');
+  const elContextBar = document.getElementById('contextBar');
+  const elXrayPanel = document.getElementById('xrayPanel');
+  const elXrFps = document.getElementById('xrFps');
+  const elXrPrims = document.getElementById('xrPrims');
+  const elXrPasses = document.getElementById('xrPasses');
+  const elXrAudio = document.getElementById('xrAudio');
+  const elXrEquation = document.getElementById('xrEquation');
+  const elXrNote = document.getElementById('xrNote');
+  const elPtCoord = document.getElementById('ptCoord');
+
+  const btnAuto = document.getElementById('btnAuto');
+  const btnXray = document.getElementById('btnXray');
+  const btnRec = document.getElementById('btnRec');
+  const btnSound = document.getElementById('btnSound');
+  const btnFullscreen = document.getElementById('btnFullscreen');
+  const tabButtons = Array.from(document.querySelectorAll('.phase-tab'));
+
+  const scopeCanvas = document.getElementById('scopeCanvas');
+  const scopeCtx = scopeCanvas.getContext('2d');
+  const ptCanvas = document.getElementById('ptCanvas');
+  const ptCtx = ptCanvas.getContext('2d');
+
+  let ptPos = [...PHASE_INFO[0].pt];
+
+  function syncSoundButton() {
+    if (audio.enabled) {
+      btnSound.classList.add('active', 'sound-on');
+      btnSound.classList.remove('sound-prompt-pulse');
+      document.getElementById('soundLabel').textContent = 'SOUND ON';
+    } else {
+      btnSound.classList.remove('active', 'sound-on');
+      document.getElementById('soundLabel').textContent = audio.unlocked ? 'MUTED' : 'SOUND';
+    }
+  }
+
+  function ensureSoundOnFirstGesture() {
+    if (!audio.unlocked) {
+      audio.unlockAndEnable();
+      syncSoundButton();
+    }
+  }
+
+  function pauseAutoTour() {
+    if (autoTour) {
+      autoTour = false;
+      btnAuto.classList.remove('active');
+      tabButtons.forEach((b, i) => {
+        const pr = document.getElementById('prog' + i);
+        if (pr) pr.style.width = i === currentPhase ? '100%' : '0%';
+      });
+    }
+  }
+
+  function renderContextBar() {
+    elContextBar.innerHTML = '';
+    canvas.classList.toggle('laser-cursor', currentPhase === 1 && grapheneSim.tool === 'laser');
+
+    const addLabel = (txt) => {
+      const s = document.createElement('span');
+      s.className = 'ctx-label';
+      s.textContent = txt;
+      elContextBar.appendChild(s);
+    };
+    const addDiv = () => {
+      const d = document.createElement('div');
+      d.className = 'ctx-divider';
+      elContextBar.appendChild(d);
+    };
+    const addChip = (label, active, onClick, accent = false) => {
+      const b = document.createElement('button');
+      b.className = 'ctx-chip' + (active ? ' active' : '') + (accent ? ' accent-action' : '');
+      b.textContent = label;
+      b.addEventListener('click', (e) => {
+        e.stopPropagation();
+        ensureSoundOnFirstGesture();
+        onClick();
+      });
+      elContextBar.appendChild(b);
+      return b;
+    };
+
+    if (currentPhase === 0) {
+      addLabel('CUT');
+      diamondSim.cutNames.forEach((name, idx) => {
+        addChip(name, diamondSim.cutIndex === idx, () => {
+          pauseAutoTour();
+          diamondSim.setCut(idx);
+          audio.ringCrystal(0.85, (idx - 1.5) * 0.35, idx);
+          renderContextBar();
+        });
+      });
+      addDiv();
+      addLabel('FIRE');
+      [
+        ['1× REAL', 1.0],
+        ['2× PRISM', 1.85],
+        ['3.5× HYPER', 3.2]
+      ].forEach(([lbl, val]) => {
+        addChip(lbl, Math.abs(diamondSim.dispersion - val) < 0.25, () => {
+          pauseAutoTour();
+          diamondSim.dispersion = val;
+          audio.ringCrystal(0.6, 0, diamondSim.cutIndex);
+          renderContextBar();
+        });
+      });
+      addDiv();
+      addChip('STRIKE BELL', false, () => {
+        diamondSim.strike();
+        audio.ringCrystal(1.0, 0, diamondSim.cutIndex);
+      }, true);
+    } else if (currentPhase === 1) {
+      addLabel('CURSOR');
+      [
+        ['PLUCK HARP', 'pluck'],
+        ['LASER CUT', 'laser'],
+        ['ANNEAL HEAL', 'heal']
+      ].forEach(([lbl, mode]) => {
+        addChip(lbl, grapheneSim.tool === mode, () => {
+          pauseAutoTour();
+          grapheneSim.tool = mode;
+          if (mode === 'heal') grapheneSim.annealAll(audio);
+          renderContextBar();
+        });
+      });
+      addDiv();
+      addChip('WAVE PULSE', false, () => {
+        grapheneSim.triggerRipple(0, 0, 0.48);
+        audio.pluckBond(0.65, 0, 0.6);
+      }, true);
+      addChip('RESET SHEET', false, () => {
+        grapheneSim.buildLattice();
+        grapheneSim.triggerRipple(0, 0, 0.28);
+        audio.annealChord();
+      });
+    } else if (currentPhase === 2) {
+      addLabel('TOPOLOGY');
+      addChip('C₆₀ BUCKYBALL', fullereneSim.subMode === 'c60', () => {
+        pauseAutoTour();
+        fullereneSim.setSubMode('c60');
+        audio.strikeFullerene(0.9, 0, false);
+        renderContextBar();
+      });
+      addChip('(6,6) NANOTUBE', fullereneSim.subMode === 'tube', () => {
+        pauseAutoTour();
+        fullereneSim.setSubMode('tube');
+        audio.strikeFullerene(0.9, 0, false);
+        renderContextBar();
+      });
+      addDiv();
+      addChip('EXCITE @La ION', false, () => {
+        fullereneSim.kickIon(audio);
+      }, true);
+    } else if (currentPhase === 3) {
+      addLabel('INSCRIBE');
+      const inp = document.createElement('input');
+      inp.type = 'text';
+      inp.className = 'bios-input';
+      inp.maxLength = 12;
+      inp.value = currentBiosWord;
+      inp.placeholder = 'TYPE WORD';
+      inp.addEventListener('input', () => {
+        pauseAutoTour();
+        ensureSoundOnFirstGesture();
+        updateBiosTextTexture(inp.value);
+        audio.bioGrain(0, 0.8);
+      });
+      inp.addEventListener('keydown', (e) => e.stopPropagation());
+      elContextBar.appendChild(inp);
+
+      addDiv();
+      ['CARBON', 'GEMINI 4', 'Z = 6', 'ALIVE', 'WILD'].forEach((w) => {
+        addChip(w, currentBiosWord === w, () => {
+          pauseAutoTour();
+          updateBiosTextTexture(w);
+          audio.bioGrain(0, 0.9);
+          renderContextBar();
+        });
+      });
+    } else if (currentPhase === 4) {
+      const stat = document.createElement('span');
+      stat.className = 'stat-pill';
+      stat.id = 'c12Badge';
+      stat.textContent = `¹²C FORGED: ${starforgeSim.c12Forged}`;
+      elContextBar.appendChild(stat);
+      addDiv();
+
+      const crushBtn = addChip('HOLD: GRAVITY CRUSH', false, () => {}, true);
+      const startCrush = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        ensureSoundOnFirstGesture();
+        pauseAutoTour();
+        starforgeSim.targetCrush = 1.0;
+      };
+      const endCrush = () => {
+        if (starforgeSim.targetCrush > 0.5) {
+          starforgeSim.supernovaBurst(audio);
+        }
+        starforgeSim.targetCrush = 0.0;
+      };
+      crushBtn.addEventListener('pointerdown', startCrush);
+      window.addEventListener('pointerup', endCrush, { once: false });
+
+      addChip('HOYLE BURST', false, () => {
+        pauseAutoTour();
+        starforgeSim.supernovaBurst(audio);
+      });
+    }
+  }
+
+  function setPhase(idx, fromAuto = false) {
+    const next = ((idx % 5) + 5) % 5;
+    const changed = next !== currentPhase;
+    currentPhase = next;
+    phaseTimer = 0.0;
+    if (!fromAuto) pauseAutoTour();
+
+    if (changed) {
+      phaseFlash = 0.42;
+      audio.setPhase(currentPhase, true);
+    }
+
+    const info = PHASE_INFO[currentPhase];
+    elPhaseDot.style.background = info.color;
+    elPhaseDot.style.boxShadow = `0 0 12px ${info.color}`;
+    elPhaseHybrid.textContent = info.hybrid;
+    elPhaseTitle.textContent = info.name;
+    elPhaseTelemetry.textContent = info.telemetry;
+    elGestureHint.textContent = info.hint;
+    elXrPrims.textContent = info.prims;
+    elXrPasses.textContent = info.passes;
+    elXrAudio.textContent = info.audioDesc;
+    elXrEquation.textContent = info.eq;
+    elPtCoord.textContent = info.ptLabel;
+
+    tabButtons.forEach((b, i) => {
+      b.classList.toggle('active', i === currentPhase);
+      const pr = document.getElementById('prog' + i);
+      if (pr) pr.style.width = i === currentPhase && !autoTour ? '100%' : '0%';
+    });
+
+    // Trigger gentle entrance impulse on newly entered world
+    if (currentPhase === 0) diamondSim.ringPulse = 0.55;
+    if (currentPhase === 1) grapheneSim.triggerRipple(0, 0, 0.32);
+    if (currentPhase === 2) fullereneSim.kickIon(null);
+
+    renderContextBar();
+  }
+
+  // Bind Top & Bottom UI Buttons
+  tabButtons.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      ensureSoundOnFirstGesture();
+      setPhase(parseInt(btn.dataset.phase, 10), false);
+    });
+  });
+
+  btnAuto.addEventListener('click', () => {
+    ensureSoundOnFirstGesture();
+    autoTour = !autoTour;
+    phaseTimer = 0;
+    btnAuto.classList.toggle('active', autoTour);
+  });
+
+  btnXray.addEventListener('click', () => {
+    ensureSoundOnFirstGesture();
+    xrayOpen = !xrayOpen;
+    btnXray.classList.toggle('active', xrayOpen);
+    elXrayPanel.classList.toggle('open', xrayOpen);
+  });
+
+  btnSound.addEventListener('click', () => {
+    audio.toggle();
+    syncSoundButton();
+  });
+
+  btnFullscreen.addEventListener('click', () => {
+    ensureSoundOnFirstGesture();
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen?.();
+    } else {
+      document.exitFullscreen?.();
+    }
+  });
+
+  // Built-in 60fps Video + Stereo WebAudio Recorder (.webm)
+  let mediaRecorder = null;
+  let recordedChunks = [];
+  btnRec.addEventListener('click', () => {
+    ensureSoundOnFirstGesture();
+    if (mediaRecorder && mediaRecorder.state === 'recording') {
+      mediaRecorder.stop();
+      return;
+    }
+    try {
+      const canvasStream = canvas.captureStream(60);
+      if (audio.streamDest) {
+        audio.streamDest.stream.getAudioTracks().forEach(t => canvasStream.addTrack(t));
+      }
+      const mime = MediaRecorder.isTypeSupported('video/webm;codecs=vp9,opus')
+        ? 'video/webm;codecs=vp9,opus'
+        : 'video/webm';
+      mediaRecorder = new MediaRecorder(canvasStream, { mimeType: mime, videoBitsPerSecond: 8_000_000 });
+      recordedChunks = [];
+      mediaRecorder.ondataavailable = (ev) => {
+        if (ev.data && ev.data.size > 0) recordedChunks.push(ev.data);
+      };
+      mediaRecorder.onstop = () => {
+        btnRec.classList.remove('rec-active');
+        document.getElementById('recLabel').textContent = 'REC';
+        const blob = new Blob(recordedChunks, { type: 'video/webm' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `gemini-4-carbon-${Date.now()}.webm`;
+        a.click();
+        setTimeout(() => URL.revokeObjectURL(url), 5000);
+      };
+      mediaRecorder.start();
+      btnRec.classList.add('rec-active');
+      document.getElementById('recLabel').textContent = 'STOP';
+    } catch (err) {
+      console.warn('Recording unavailable:', err);
+    }
+  });
+
+  // =========================================================================
+  // CANVAS POINTER, KEYBOARD & P-T PHASE MAP INTERACTION
+  // =========================================================================
+  let pointerDownPos = [0, 0];
+  let pointerMovedDist = 0;
+
+  function getUV(e) {
+    const rect = canvas.getBoundingClientRect();
+    return [
+      (e.clientX - rect.left) / Math.max(1, rect.width),
+      1.0 - (e.clientY - rect.top) / Math.max(1, rect.height)
+    ];
+  }
+
+  canvas.addEventListener('pointerdown', (e) => {
+    ensureSoundOnFirstGesture();
+    pauseAutoTour();
+    pointerDown = true;
+    canvas.setPointerCapture?.(e.pointerId);
+    const uv = getUV(e);
+    pointerUV = uv;
+    prevPointerUV = uv;
+    pointerDownPos = [e.clientX, e.clientY];
+    pointerMovedDist = 0;
+
+    const aspect = canvas.width / Math.max(1, canvas.height);
+    const ndcX = uv[0] * 2 - 1;
+    const ndcY = uv[1] * 2 - 1;
+
+    if (currentPhase === 1) {
+      grapheneSim.interactScreen(ndcX, ndcY, ndcX, ndcY, grapheneSim.getProjView(aspect), audio, e.shiftKey ? 'laser' : null);
+    } else if (currentPhase === 2) {
+      fullereneSim.pokeCage(ndcX, ndcY, fullereneSim.getProjView(aspect), audio);
+    } else if (currentPhase === 3) {
+      biosScatterTimer = 0.28;
+      audio.bioGrain(ndcX, 1.0);
+    } else if (currentPhase === 4) {
+      starforgeSim.targetCrush = 1.0;
+      starforgeSim.spawnShock(uv[0], uv[1], 0.85);
+      audio.fusionFlash(ndcX * 0.8, 0.7);
+    }
+  });
+
+  canvas.addEventListener('pointermove', (e) => {
+    const uv = getUV(e);
+    const dx = uv[0] - prevPointerUV[0];
+    const dy = uv[1] - prevPointerUV[1];
+    pointerMovedDist += Math.hypot(e.clientX - pointerDownPos[0], e.clientY - pointerDownPos[1]);
+
+    const aspect = canvas.width / Math.max(1, canvas.height);
+    const ndcX = uv[0] * 2 - 1;
+    const ndcY = uv[1] * 2 - 1;
+    const prevNdcX = prevPointerUV[0] * 2 - 1;
+    const prevNdcY = prevPointerUV[1] * 2 - 1;
+
+    if (currentPhase === 0) {
+      if (pointerDown) {
+        if (e.shiftKey) {
+          diamondSim.lightAzimuth += dx * 3.8;
+          diamondSim.lightElev = Math.max(0.25, Math.min(1.35, diamondSim.lightElev + dy * 2.4));
+        } else {
+          diamondSim.yaw += dx * 4.2;
+          diamondSim.pitch = Math.max(-0.95, Math.min(0.95, diamondSim.pitch - dy * 3.4));
+          diamondSim.velYaw = dx * 28.0;
+          diamondSim.velPitch = -dy * 22.0;
+        }
+        audio.updateDiamondMotion(Math.hypot(dx, dy) * 35);
+      } else {
+        // Subtle parallax steering of incident light beam on hover!
+        diamondSim.lightAzimuth = 0.62 + (uv[0] - 0.5) * 0.85;
+        diamondSim.lightElev = 0.76 + (uv[1] - 0.5) * 0.35;
+      }
+    } else if (currentPhase === 1) {
+      if (pointerDown || Math.hypot(dx, dy) > 0.002) {
+        const toolOverride = (!pointerDown && grapheneSim.tool === 'laser') ? 'pluck' : (e.shiftKey ? 'laser' : null);
+        if (pointerDown || toolOverride === 'pluck') {
+          grapheneSim.interactScreen(ndcX, ndcY, prevNdcX, prevNdcY, grapheneSim.getProjView(aspect), audio, pointerDown ? toolOverride : 'pluck');
+        }
+      }
+    } else if (currentPhase === 2) {
+      if (pointerDown) {
+        fullereneSim.rotYaw += dx * 4.2;
+        fullereneSim.rotPitch = Math.max(-1.2, Math.min(1.2, fullereneSim.rotPitch - dy * 3.5));
+        fullereneSim.velYaw = dx * 24.0;
+        fullereneSim.velPitch = -dy * 18.0;
+      }
+    } else if (currentPhase === 3) {
+      if (Math.hypot(dx, dy) > 0.008 && audio.enabled) {
+        audio.bioGrain(ndcX, Math.min(1.0, Math.hypot(dx, dy) * 25));
+      }
+    }
+
+    prevPointerUV = pointerUV;
+    pointerUV = uv;
+  });
+
+  window.addEventListener('pointerup', () => {
+    if (!pointerDown) return;
+    pointerDown = false;
+    if (currentPhase === 0 && pointerMovedDist < 12) {
+      // Crisp tap on crystal rings eigenmodes!
+      diamondSim.strike();
+      audio.ringCrystal(0.95, (pointerUV[0] - 0.5) * 1.4, diamondSim.cutIndex);
+    }
+    if (currentPhase === 4 && starforgeSim.targetCrush > 0.5) {
+      starforgeSim.supernovaBurst(audio);
+      starforgeSim.targetCrush = 0.0;
+    }
+  });
+
+  // Interactive P-T Phase Diagram Click/Drag
+  let ptDragging = false;
+  function handlePtPick(e) {
+    ensureSoundOnFirstGesture();
+    const r = ptCanvas.getBoundingClientRect();
+    const x = Math.max(0, Math.min(1, (e.clientX - r.left) / r.width));
+    const y = Math.max(0, Math.min(1, (e.clientY - r.top) / r.height));
+    ptPos = [x, y];
+
+    // Nearest thermodynamic carbon phase in (T, P) space
+    let bestIdx = 0, bestD = 999;
+    PHASE_INFO.forEach((inf, idx) => {
+      const d = Math.hypot(inf.pt[0] - x, inf.pt[1] - y);
+      if (d < bestD) { bestD = d; bestIdx = idx; }
+    });
+    if (bestIdx !== currentPhase) {
+      setPhase(bestIdx, false);
+    } else {
+      pauseAutoTour();
+    }
+  }
+  ptCanvas.addEventListener('pointerdown', (e) => { ptDragging = true; handlePtPick(e); });
+  window.addEventListener('pointermove', (e) => { if (ptDragging) handlePtPick(e); });
+  window.addEventListener('pointerup', () => { ptDragging = false; });
+
+  // Keyboard shortcuts (1-5 phases, X x-ray, M mute, F fullscreen, Space action)
+  window.addEventListener('keydown', (e) => {
+    if (document.activeElement && document.activeElement.tagName === 'INPUT') return;
+    ensureSoundOnFirstGesture();
+    if (e.key >= '1' && e.key <= '5') {
+      setPhase(parseInt(e.key, 10) - 1, false);
+    } else if (e.key === 'x' || e.key === 'X') {
+      btnXray.click();
+    } else if (e.key === 'm' || e.key === 'M') {
+      btnSound.click();
+    } else if (e.key === 'f' || e.key === 'F') {
+      btnFullscreen.click();
+    } else if (e.key === ' ') {
+      e.preventDefault();
+      if (currentPhase === 0) { diamondSim.strike(); audio.ringCrystal(1, 0, diamondSim.cutIndex); }
+      if (currentPhase === 1) { grapheneSim.triggerRipple(0, 0, 0.5); audio.pluckBond(0.7, 0, 0.6); }
+      if (currentPhase === 2) { fullereneSim.kickIon(audio); }
+      if (currentPhase === 3) { biosScatterTimer = 0.32; audio.bioGrain(0, 1.0); }
+      if (currentPhase === 4) { starforgeSim.supernovaBurst(audio); }
+    }
+  });
+
+  // =========================================================================
+  // RESIZE & HUD CANVAS RENDERERS (P-T DIAGRAM + OSCILLOSCOPE)
+  // =========================================================================
+  function resize() {
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const w = Math.max(320, Math.floor(canvas.clientWidth * dpr));
+    const h = Math.max(240, Math.floor(canvas.clientHeight * dpr));
+    if (canvas.width !== w || canvas.height !== h) {
+      canvas.width = w;
+      canvas.height = h;
+    }
+  }
+  window.addEventListener('resize', resize);
+  resize();
+  setPhase(0, true);
+  autoTour = true;
+  btnAuto.classList.add('active');
+
+  function drawPtDiagram(dt) {
+    if (ptCanvas.offsetParent === null) return;
+    const target = PHASE_INFO[currentPhase].pt;
+    if (!ptDragging) {
+      ptPos[0] += (target[0] - ptPos[0]) * Math.min(1, dt * 6);
+      ptPos[1] += (target[1] - ptPos[1]) * Math.min(1, dt * 6);
+    }
+
+    const w = ptCanvas.width, h = ptCanvas.height;
+    ptCtx.clearRect(0, 0, w, h);
+
+    // Subtle phase-boundary curves
+    ptCtx.strokeStyle = 'rgba(255,255,255,0.12)';
+    ptCtx.lineWidth = 1;
+    ptCtx.beginPath();
+    ptCtx.moveTo(0, h * 0.36);
+    ptCtx.quadraticCurveTo(w * 0.5, h * 0.34, w * 0.72, 0);
+    ptCtx.moveTo(w * 0.70, 0);
+    ptCtx.lineTo(w * 0.76, h);
+    ptCtx.moveTo(0, h * 0.72);
+    ptCtx.lineTo(w * 0.74, h * 0.72);
+    ptCtx.stroke();
+
+    // Node markers for the 5 phases
+    PHASE_INFO.forEach((inf, idx) => {
+      const px = inf.pt[0] * w, py = inf.pt[1] * h;
+      ptCtx.fillStyle = idx === currentPhase ? inf.color : 'rgba(255,255,255,0.28)';
+      ptCtx.beginPath();
+      ptCtx.arc(px, py, idx === currentPhase ? 3.5 : 2.2, 0, Math.PI * 2);
+      ptCtx.fill();
+    });
+
+    // Live crosshair
+    const cx = ptPos[0] * w, cy = ptPos[1] * h;
+    const col = PHASE_INFO[currentPhase].color;
+    ptCtx.strokeStyle = col;
+    ptCtx.lineWidth = 1.2;
+    ptCtx.beginPath();
+    ptCtx.arc(cx, cy, 6.5, 0, Math.PI * 2);
+    ptCtx.stroke();
+  }
+
+  function drawScope() {
+    if (!xrayOpen) return;
+    const w = scopeCanvas.width, h = scopeCanvas.height;
+    scopeCtx.clearRect(0, 0, w, h);
+    const data = audio.sampleScope();
+
+    scopeCtx.strokeStyle = 'rgba(125, 211, 252, 0.88)';
+    scopeCtx.lineWidth = 1.5;
+    scopeCtx.beginPath();
+    if (!data) {
+      scopeCtx.moveTo(0, h * 0.5);
+      scopeCtx.lineTo(w, h * 0.5);
+    } else {
+      for (let i = 0; i < data.length; i++) {
+        const x = (i / (data.length - 1)) * w;
+        const y = ((data[i] - 128) / 128) * (h * 0.42) + h * 0.5;
+        if (i === 0) scopeCtx.moveTo(x, y);
+        else scopeCtx.lineTo(x, y);
+      }
+    }
+    scopeCtx.stroke();
+    elXrNote.textContent = audio.enabled ? audio.lastNoteName : 'AUDIO STANDBY';
+  }
+
+  // =========================================================================
+  // HELPER TO RENDER INSTANCED 3D BONDS + SPHERE ATOMS
+  // =========================================================================
+  function renderMolecular3D(pv, atomPos, atomMeta, numAtoms, bondP0, bondP1, bondMeta, numBonds) {
+    gl.enable(gl.DEPTH_TEST);
+    gl.depthFunc(gl.LEQUAL);
+    gl.enable(gl.BLEND);
+    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+
+    if (numBonds > 0) {
+      gl.useProgram(progBond);
+      gl.uniformMatrix4fv(gl.getUniformLocation(progBond, 'uProjView'), false, pv);
+      gl.uniform2f(gl.getUniformLocation(progBond, 'uRes'), canvas.width, canvas.height);
+
+      gl.bindVertexArray(bondVao);
+      gl.bindBuffer(gl.ARRAY_BUFFER, bondP0GlBuf);
+      gl.bufferSubData(gl.ARRAY_BUFFER, 0, bondP0.subarray(0, numBonds * 3));
+      gl.bindBuffer(gl.ARRAY_BUFFER, bondP1GlBuf);
+      gl.bufferSubData(gl.ARRAY_BUFFER, 0, bondP1.subarray(0, numBonds * 3));
+      gl.bindBuffer(gl.ARRAY_BUFFER, bondMetaGlBuf);
+      gl.bufferSubData(gl.ARRAY_BUFFER, 0, bondMeta.subarray(0, numBonds * 4));
+
+      gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, numBonds);
+    }
+
+    if (numAtoms > 0) {
+      gl.useProgram(progAtom);
+      gl.uniformMatrix4fv(gl.getUniformLocation(progAtom, 'uProjView'), false, pv);
+      gl.uniform2f(gl.getUniformLocation(progAtom, 'uRes'), canvas.width, canvas.height);
+
+      gl.bindVertexArray(atomVao);
+      gl.bindBuffer(gl.ARRAY_BUFFER, atomPosGlBuf);
+      gl.bufferSubData(gl.ARRAY_BUFFER, 0, atomPos.subarray(0, numAtoms * 3));
+      gl.bindBuffer(gl.ARRAY_BUFFER, atomMetaGlBuf);
+      gl.bufferSubData(gl.ARRAY_BUFFER, 0, atomMeta.subarray(0, numAtoms * 4));
+
+      gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, numAtoms);
+    }
+
+    gl.disable(gl.BLEND);
+    gl.disable(gl.DEPTH_TEST);
+  }
+
+  // =========================================================================
+  // MAIN 60–120 FPS RENDER LOOP
+  // =========================================================================
+  let lastT = performance.now();
+  let fpsAccum = 0, fpsFrames = 0, lastFpsUpdate = lastT;
+  let lastAutoCue = -1;
+
+  function frame(now) {
+    requestAnimationFrame(frame);
+    resize();
+
+    const dt = Math.min(0.05, Math.max(0.001, (now - lastT) * 0.001));
+    lastT = now;
+    const tSec = now * 0.001;
+
+    phaseFlash = Math.max(0, phaseFlash - dt * 1.6);
+    biosScatterTimer = Math.max(0, biosScatterTimer - dt);
+
+    // Auto-Tour Director + subtle mid-phase flourishes
+    if (autoTour) {
+      phaseTimer += dt;
+      const pct = Math.min(100, (phaseTimer / TOUR_DURATION) * 100);
+      const pr = document.getElementById('prog' + currentPhase);
+      if (pr) pr.style.width = pct.toFixed(1) + '%';
+
+      const cueSlot = Math.floor(phaseTimer / 3.8);
+      if (cueSlot !== lastAutoCue && cueSlot === 1) {
+        lastAutoCue = cueSlot;
+        if (currentPhase === 0) {
+          diamondSim.setCut((diamondSim.cutIndex + 1) % 4);
+          renderContextBar();
+        } else if (currentPhase === 1) {
+          grapheneSim.triggerRipple((Math.random() - 0.5) * 1.2, (Math.random() - 0.5) * 1.0, 0.42);
+        } else if (currentPhase === 2) {
+          fullereneSim.kickIon(audio);
+        } else if (currentPhase === 3) {
+          const nextW = currentBiosWord === 'CARBON' ? 'GEMINI 4' : 'CARBON';
+          updateBiosTextTexture(nextW);
+          renderContextBar();
+        } else if (currentPhase === 4) {
+          starforgeSim.supernovaBurst(audio);
+        }
+      }
+
+      if (phaseTimer >= TOUR_DURATION) {
+        lastAutoCue = -1;
+        setPhase((currentPhase + 1) % 5, true);
+      }
+    }
+
+    const aspect = canvas.width / Math.max(1, canvas.height);
+
+    // -----------------------------------------------------------------------
+    // RENDER ACTIVE CARBON ALLOTROPE
+    // -----------------------------------------------------------------------
+    if (currentPhase === 0) {
+      diamondSim.update(dt, pointerDown);
+
+      // Pass 1: Render refracted spectral caustics into 256x256 caustic FBO
+      gl.bindFramebuffer(gl.FRAMEBUFFER, causticFbo);
+      gl.viewport(0, 0, CAUSTIC_RES, CAUSTIC_RES);
+      gl.disable(gl.DEPTH_TEST);
+      gl.clearColor(0, 0, 0, 1);
+      gl.clear(gl.COLOR_BUFFER_BIT);
+
+      if (diamondSim.activeSplats > 0) {
+        gl.enable(gl.BLEND);
+        gl.blendFunc(gl.ONE, gl.ONE);
+        gl.useProgram(progCaustic);
+        gl.bindVertexArray(causticVao);
+
+        gl.bindBuffer(gl.ARRAY_BUFFER, causticPosBuf);
+        gl.bufferSubData(gl.ARRAY_BUFFER, 0, diamondSim.splatPosSize.subarray(0, diamondSim.activeSplats * 4));
+        gl.bindBuffer(gl.ARRAY_BUFFER, causticColBuf);
+        gl.bufferSubData(gl.ARRAY_BUFFER, 0, diamondSim.splatColor.subarray(0, diamondSim.activeSplats * 3));
+
+        gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, diamondSim.activeSplats);
+        gl.disable(gl.BLEND);
+      }
+
+      // Pass 2: Fullscreen Analytic Convex Raytracer + 7-Wavelength Dispersion
+      gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+      gl.viewport(0, 0, canvas.width, canvas.height);
+      gl.useProgram(progDiamond);
+      gl.bindVertexArray(emptyVao);
+
+      gl.uniform2f(gl.getUniformLocation(progDiamond, 'uRes'), canvas.width, canvas.height);
+      gl.uniform1f(gl.getUniformLocation(progDiamond, 'uTime'), tSec);
+      gl.uniformMatrix3fv(gl.getUniformLocation(progDiamond, 'uRot'), false, diamondSim.rotMat);
+      gl.uniformMatrix3fv(gl.getUniformLocation(progDiamond, 'uRotInv'), false, diamondSim.rotInv);
+      gl.uniform4fv(gl.getUniformLocation(progDiamond, 'uPlanes'), diamondSim.planeUniforms);
+      const lDir = diamondSim.getLightDir();
+      gl.uniform3f(gl.getUniformLocation(progDiamond, 'uLightDir'), lDir[0], lDir[1], lDir[2]);
+      gl.uniform1f(gl.getUniformLocation(progDiamond, 'uDispersion'), diamondSim.dispersion);
+      gl.uniform1f(gl.getUniformLocation(progDiamond, 'uRingPulse'), diamondSim.ringPulse);
+      gl.uniform1f(gl.getUniformLocation(progDiamond, 'uFlash'), phaseFlash);
+
+      gl.activeTexture(gl.TEXTURE0);
+      gl.bindTexture(gl.TEXTURE_2D, causticTex);
+      gl.uniform1i(gl.getUniformLocation(progDiamond, 'uCausticTex'), 0);
+
+      gl.drawArrays(gl.TRIANGLES, 0, 3);
+
+    } else if (currentPhase === 1) {
+      grapheneSim.camYaw = Math.sin(tSec * 0.25) * 0.24;
+      grapheneSim.update(dt, tSec, audio);
+      const pv = grapheneSim.getProjView(aspect);
+
+      gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+      gl.viewport(0, 0, canvas.width, canvas.height);
+      gl.disable(gl.DEPTH_TEST);
+      gl.clear(gl.DEPTH_BUFFER_BIT);
+
+      gl.useProgram(progLatticeBg);
+      gl.bindVertexArray(emptyVao);
+      gl.uniform2f(gl.getUniformLocation(progLatticeBg, 'uRes'), canvas.width, canvas.height);
+      gl.uniform1f(gl.getUniformLocation(progLatticeBg, 'uTime'), tSec);
+      gl.uniform1i(gl.getUniformLocation(progLatticeBg, 'uMode'), 1);
+      gl.uniform2f(gl.getUniformLocation(progLatticeBg, 'uCursor'), pointerUV[0], pointerUV[1]);
+      gl.uniform1f(gl.getUniformLocation(progLatticeBg, 'uFlash'), phaseFlash);
+      gl.drawArrays(gl.TRIANGLES, 0, 3);
+
+      renderMolecular3D(
+        pv,
+        grapheneSim.atomPosBuf, grapheneSim.atomMetaBuf, grapheneSim.atoms.length,
+        grapheneSim.bondP0Buf, grapheneSim.bondP1Buf, grapheneSim.bondMetaBuf, grapheneSim.activeBondCount
+      );
+
+    } else if (currentPhase === 2) {
+      fullereneSim.update(dt, pointerDown, audio);
+      const pv = fullereneSim.getProjView(aspect);
+
+      gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+      gl.viewport(0, 0, canvas.width, canvas.height);
+      gl.disable(gl.DEPTH_TEST);
+      gl.clear(gl.DEPTH_BUFFER_BIT);
+
+      gl.useProgram(progLatticeBg);
+      gl.bindVertexArray(emptyVao);
+      gl.uniform2f(gl.getUniformLocation(progLatticeBg, 'uRes'), canvas.width, canvas.height);
+      gl.uniform1f(gl.getUniformLocation(progLatticeBg, 'uTime'), tSec);
+      gl.uniform1i(gl.getUniformLocation(progLatticeBg, 'uMode'), 2);
+      gl.uniform2f(gl.getUniformLocation(progLatticeBg, 'uCursor'), pointerUV[0], pointerUV[1]);
+      gl.uniform1f(gl.getUniformLocation(progLatticeBg, 'uFlash'), phaseFlash);
+      gl.drawArrays(gl.TRIANGLES, 0, 3);
+
+      renderMolecular3D(
+        pv,
+        fullereneSim.atomPosBuf, fullereneSim.atomMetaBuf, fullereneSim.atoms.length + 1,
+        fullereneSim.bondP0Buf, fullereneSim.bondP1Buf, fullereneSim.bondMetaBuf, fullereneSim.bonds.length
+      );
+
+    } else if (currentPhase === 3) {
+      // 2 GPGPU chemotaxis substeps per frame for fluid organic motion!
+      const act = biosScatterTimer > 0 ? -1.0 : 1.0;
+      stepBiosGPU(tSec, pointerUV, act);
+      stepBiosGPU(tSec + 0.007, pointerUV, act);
+
+      gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+      gl.viewport(0, 0, canvas.width, canvas.height);
+      gl.disable(gl.DEPTH_TEST);
+      gl.useProgram(progBiosDisplay);
+      gl.bindVertexArray(emptyVao);
+
+      gl.activeTexture(gl.TEXTURE0);
+      gl.bindTexture(gl.TEXTURE_2D, trailPing.tex);
+      gl.uniform1i(gl.getUniformLocation(progBiosDisplay, 'uTrailTex'), 0);
+
+      gl.activeTexture(gl.TEXTURE1);
+      gl.bindTexture(gl.TEXTURE_2D, biosTextTex);
+      gl.uniform1i(gl.getUniformLocation(progBiosDisplay, 'uTextTex'), 1);
+
+      gl.uniform1f(gl.getUniformLocation(progBiosDisplay, 'uTextStrength'), biosTextStrength);
+      gl.uniform1f(gl.getUniformLocation(progBiosDisplay, 'uFlash'), phaseFlash);
+      gl.uniform1f(gl.getUniformLocation(progBiosDisplay, 'uTime'), tSec);
+      gl.drawArrays(gl.TRIANGLES, 0, 3);
+
+    } else if (currentPhase === 4) {
+      const pv = starforgeSim.update(dt, aspect, audio);
+      const badge = document.getElementById('c12Badge');
+      if (badge) badge.textContent = `¹²C FORGED: ${starforgeSim.c12Forged}`;
+
+      gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+      gl.viewport(0, 0, canvas.width, canvas.height);
+      gl.disable(gl.DEPTH_TEST);
+      gl.clear(gl.DEPTH_BUFFER_BIT);
+
+      gl.useProgram(progStarforge);
+      gl.bindVertexArray(emptyVao);
+      gl.uniform2f(gl.getUniformLocation(progStarforge, 'uRes'), canvas.width, canvas.height);
+      gl.uniform1f(gl.getUniformLocation(progStarforge, 'uTime'), tSec);
+      gl.uniform1f(gl.getUniformLocation(progStarforge, 'uCrush'), starforgeSim.crush);
+      gl.uniform4fv(gl.getUniformLocation(progStarforge, 'uShocks'), starforgeSim.shockUniform);
+      gl.uniform1f(gl.getUniformLocation(progStarforge, 'uFlash'), phaseFlash);
+      gl.drawArrays(gl.TRIANGLES, 0, 3);
+
+      renderMolecular3D(
+        pv,
+        starforgeSim.atomPosBuf, starforgeSim.atomMetaBuf, starforgeSim.particles.length,
+        null, null, null, 0
+      );
+    }
+
+    // Update P-T diagram & X-Ray Telemetry
+    drawPtDiagram(dt);
+    drawScope();
+
+    fpsAccum += dt;
+    fpsFrames++;
+    if (now - lastFpsUpdate > 400) {
+      const avgDt = fpsAccum / Math.max(1, fpsFrames);
+      const fps = Math.round(1 / avgDt);
+      elXrFps.textContent = `${fps} FPS · ${(avgDt * 1000).toFixed(1)} ms`;
+      fpsAccum = 0;
+      fpsFrames = 0;
+      lastFpsUpdate = now;
+    }
+  }
+
+  requestAnimationFrame(frame);
+})();
+
+  </script>
+</body>
+</html>

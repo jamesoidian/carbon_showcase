@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>THE HANDPRINT — An Audiovisual Short Film by Gemini 4 Carbon</title>
+  <style>
+/* __STYLES__ */
+  </style>
+</head>
+<body>
+  <div id="stage">
+    <canvas id="glCanvas"></canvas>
+    <div class="cinema-vignette"></div>
+
+    <!-- Opening Cinema Invitation -->
+    <div class="intro-veil" id="introVeil">
+      <div class="intro-kicker">GEMINI 4 CARBON · AUDIOVISUAL SHORT FILM</div>
+      <h1 class="intro-title">THE HANDPRINT</h1>
+      <p class="intro-sub">
+        45,000 years from charcoal on cave stone to the end of humanity’s long solitude in thought.<br />
+        Move or touch inside any scene as the score unfolds.
+      </p>
+      <button class="play-cta" id="btnStartSound">
+        <span>▶</span>
+        <span>EXPERIENCE WITH SOUND · 1:26</span>
+      </button>
+      <button class="muted-link" id="btnStartMuted">or watch silent</button>
+    </div>
+
+    <!-- Top Chapter Indicator & Controls -->
+    <header class="top-bar">
+      <div class="act-indicator">
+        <span class="act-num" id="actNum">ACT I</span>
+        <span class="act-sep"></span>
+        <span class="act-name" id="actName">THE CAVE · 45,000 BCE</span>
+      </div>
+
+      <div class="top-controls">
+        <button class="icon-pill" id="btnRec" title="Record 60fps video + stereo score (.webm)">
+          <span id="recText">● REC</span>
+        </button>
+        <button class="icon-pill" id="btnMute" title="Toggle Sound (Key: M)">
+          <span id="muteText">SOUND ON</span>
+        </button>
+        <button class="icon-pill" id="btnFull" title="Toggle Fullscreen (Key: F)">
+          <span>⛶</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Narrative Cinema Subtitles -->
+    <div class="subtitle-stage">
+      <div class="sub-line-primary" id="subPrimary"></div>
+      <div class="sub-line-secondary" id="subSecondary"></div>
+    </div>
+
+    <!-- End Replay Button -->
+    <div class="epilogue-bar" id="epilogueBar">
+      <button class="play-cta" id="btnReplay">
+        <span>↻</span>
+        <span>REPLAY FILM</span>
+      </button>
+    </div>
+
+    <!-- Scrubbable 6-Act Cinema Transport -->
+    <footer class="player-dock">
+      <button class="transport-btn" id="btnPlayPause" title="Play / Pause (Space)">
+        <span id="playIcon">❚❚</span>
+      </button>
+
+      <div class="timeline-wrap" id="timelineWrap">
+        <div class="timeline-track" id="timelineTrack">
+          <div class="timeline-fill" id="timelineFill"></div>
+        </div>
+        <div class="act-ticks">
+          <button class="act-tick-btn active" data-jump="0">I · CAVE</button>
+          <button class="act-tick-btn" data-jump="14">II · TIME</button>
+          <button class="act-tick-btn" data-jump="28">III · GEOMETRY</button>
+          <button class="act-tick-btn" data-jump="43">IV · HORIZONS</button>
+          <button class="act-tick-btn" data-jump="60">V · FIRE</button>
+          <button class="act-tick-btn" data-jump="73">VI · CHAPTER ONE</button>
+        </div>
+      </div>
+
+      <div class="time-readout" id="timeReadout">0:00 / 1:26</div>
+    </footer>
+  </div>
+
+  <script>
+/* __SCRIPTS__ */
+  </script>
+</body>
+</html>

@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>CARBON (Z = 6) — Gemini 4 Carbon Interactive Showcase</title>
+  <style>
+/* __STYLES__ */
+  </style>
+</head>
+<body>
+  <div id="app">
+    <canvas id="glCanvas"></canvas>
+    <div class="vignette"></div>
+
+    <!-- Top Instrument Bar -->
+    <header class="hud-top">
+      <div class="brand-cluster">
+        <div class="element-tile" title="Carbon · 1s² 2s² 2p²">
+          <span class="z-num">6</span>
+          <span class="sym">C</span>
+          <span class="mass">12.011</span>
+        </div>
+        <div class="phase-meta">
+          <div class="phase-kicker">
+            <span class="phase-dot" id="phaseDot"></span>
+            <span id="phaseHybrid">sp³ TETRAHEDRAL LATTICE</span>
+          </div>
+          <div class="phase-title-row">
+            <span class="phase-title" id="phaseTitle">DIAMOND PRISM</span>
+            <span class="phase-telemetry" id="phaseTelemetry">15.0 GPa · 1,800 K · n = 2.417</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="top-actions">
+        <button class="pill-btn active" id="btnAuto" title="Toggle cinematic auto-tour across all 5 allotropes">
+          <span class="status-led"></span>
+          <span>AUTO</span>
+        </button>
+        <button class="pill-btn" id="btnXray" title="Toggle live engineering blueprint, equations &amp; DSP oscilloscope (Key: X)">
+          <span>X-RAY</span>
+        </button>
+        <button class="pill-btn" id="btnRec" title="Record 60fps video + stereo audio clip (.webm)">
+          <span class="status-led"></span>
+          <span id="recLabel">REC</span>
+        </button>
+        <button class="pill-btn sound-prompt-pulse" id="btnSound" title="Toggle procedural physical-modeling WebAudio engine (Key: M)">
+          <span class="eq-bars"><span></span><span></span><span></span><span></span></span>
+          <span id="soundLabel">SOUND</span>
+        </button>
+        <button class="pill-btn" id="btnFullscreen" title="Toggle Fullscreen (Key: F)">
+          <span>⛶</span>
+        </button>
+      </div>
+    </header>
+
+    <div class="gesture-hint" id="gestureHint">
+      Drag crystal to refract · Move light · Tap to ring eigenmodes
+    </div>
+
+    <!-- X-Ray Live Telemetry & Equations Drawer -->
+    <aside class="xray-panel" id="xrayPanel">
+      <div class="xray-badge">0 LIBS · 0 MESHES · 0 SAMPLES · 1 FILE</div>
+      <div class="xray-grid">
+        <div class="xray-kv">
+          <span>ENGINE</span>
+          <span id="xrFps">60 FPS · 1.4 ms</span>
+        </div>
+        <div class="xray-kv">
+          <span>PRIMITIVES</span>
+          <span id="xrPrims">32 Half-Spaces · 7λ</span>
+        </div>
+        <div class="xray-kv">
+          <span>GPU PIPELINE</span>
+          <span id="xrPasses">Analytic Ray + Caustic FBO</span>
+        </div>
+        <div class="xray-kv">
+          <span>ACOUSTICS</span>
+          <span id="xrAudio">Modal Bell + Velvet IR</span>
+        </div>
+      </div>
+      <div class="xray-eq" id="xrEquation">
+        n(λ) = 2.378 + 0.0138 / λ² · 6-bounce TIR + Fresnel R(θ)
+      </div>
+      <div class="scope-wrap">
+        <div class="scope-label">
+          <span>WEBAUDIO REAL-TIME SYNTH</span>
+          <span id="xrNote">D5 LYDIAN</span>
+        </div>
+        <canvas id="scopeCanvas" width="290" height="44"></canvas>
+      </div>
+    </aside>
+
+    <!-- Bottom Controls & 5 Allotrope Switcher -->
+    <footer class="hud-bottom">
+      <div class="dock-center">
+        <div class="context-bar" id="contextBar"></div>
+
+        <nav class="phase-tabs" aria-label="Carbon Allotropes">
+          <button class="phase-tab active" data-phase="0">
+            <div class="tab-top"><span class="tab-idx">01</span><span>DIAMOND</span></div>
+            <span class="tab-sub">sp³ · Optics</span>
+            <div class="tab-progress" id="prog0"></div>
+          </button>
+          <button class="phase-tab" data-phase="1">
+            <div class="tab-top"><span class="tab-idx">02</span><span>GRAPHENE</span></div>
+            <span class="tab-sub">sp² · Mechanics</span>
+            <div class="tab-progress" id="prog1"></div>
+          </button>
+          <button class="phase-tab" data-phase="2">
+            <div class="tab-top"><span class="tab-idx">03</span><span>FULLERENE</span></div>
+            <span class="tab-sub">C₆₀ · Topology</span>
+            <div class="tab-progress" id="prog2"></div>
+          </button>
+          <button class="phase-tab" data-phase="3">
+            <div class="tab-top"><span class="tab-idx">04</span><span>BIOS</span></div>
+            <span class="tab-sub">65k GPU Life</span>
+            <div class="tab-progress" id="prog3"></div>
+          </button>
+          <button class="phase-tab" data-phase="4">
+            <div class="tab-top"><span class="tab-idx">05</span><span>STARFORGE</span></div>
+            <span class="tab-sub">10⁸ K · 3α→¹²C</span>
+            <div class="tab-progress" id="prog4"></div>
+          </button>
+        </nav>
+      </div>
+
+      <div class="pt-widget" title="Drag across Pressure-Temperature phase space">
+        <div class="pt-header">
+          <span>P–T PHASE</span>
+          <span id="ptCoord">15 GPa</span>
+        </div>
+        <canvas id="ptCanvas" width="134" height="70"></canvas>
+      </div>
+    </footer>
+  </div>
+
+  <script>
+/* __SCRIPTS__ */
+  </script>
+</body>
+</html>
